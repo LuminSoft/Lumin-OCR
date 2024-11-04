@@ -1,0 +1,271 @@
+{
+  "project_info": {
+    "project_number": "477819023880",
+    "project_id": "excel-hr-app",
+    "storage_bucket": "excel-hr-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:477819023880:android:926fe4e144692e56f257bd",
+        "android_client_info": {
+          "package_name": "com.example.cowpay_example"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWbbXDAkQVjEybtFWwRsRhxLN3yMKD_GI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:477819023880:android:01a3563643a4434df257bd",
+        "android_client_info": {
+          "package_name": "com.example.testocr"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWbbXDAkQVjEybtFWwRsRhxLN3yMKD_GI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:477819023880:android:4e2fb19d01a81c4df257bd",
+        "android_client_info": {
+          "package_name": "com.excelsystems.new_ekyc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWbbXDAkQVjEybtFWwRsRhxLN3yMKD_GI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:477819023880:android:a6f5795ae18d6c67f257bd",
+        "android_client_info": {
+          "package_name": "com.innovitics.azinvest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWbbXDAkQVjEybtFWwRsRhxLN3yMKD_GI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:477819023880:android:de1c11868522e567f257bd",
+        "android_client_info": {
+          "package_name": "com.luminsoft.EnrollTestingApp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWbbXDAkQVjEybtFWwRsRhxLN3yMKD_GI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:477819023880:android:673be890c2292cd5f257bd",
+        "android_client_info": {
+          "package_name": "com.luminsoft.ekyc_android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWbbXDAkQVjEybtFWwRsRhxLN3yMKD_GI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:477819023880:android:dc1ac8f45569f962f257bd",
+        "android_client_info": {
+          "package_name": "com.luminsoft.fra"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWbbXDAkQVjEybtFWwRsRhxLN3yMKD_GI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:477819023880:android:06dd6749a4cf9240f257bd",
+        "android_client_info": {
+          "package_name": "com.luminsoft.newcowpay"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWbbXDAkQVjEybtFWwRsRhxLN3yMKD_GI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:477819023880:android:c6f437de895e173bf257bd",
+        "android_client_info": {
+          "package_name": "com.luminsoft.ocrandroid"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWbbXDAkQVjEybtFWwRsRhxLN3yMKD_GI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "477819023880-7dg89olgaqc0adu3b3r12nf57hckiaen.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
