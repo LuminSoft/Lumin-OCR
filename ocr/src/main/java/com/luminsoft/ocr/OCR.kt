@@ -8,7 +8,16 @@ import com.luminsoft.ocr.core.models.LocalizationCode
 import com.luminsoft.ocr.core.models.OCRCallback
 import com.luminsoft.ocr.core.models.OCREnvironment
 import com.luminsoft.ocr.core.sdk.OcrSDK
+import com.luminsoft.ocr.license.LicenseVerifier.verifyLicense
+import com.luminsoft.ocr.license.generateLicenseFile
 import java.util.Locale
+
+val licenseData = """
+{
+    "userId": "12345",
+    "expiresOn": "2024-12-31"
+}
+""".trimIndent()
 
 object OCR {
     @Throws(Exception::class)
@@ -28,6 +37,8 @@ object OCR {
     ) {
         Log.d("LaunchOCR", "OCR Launched Successfully")
         setLocale(OcrSDK.localizationCode, activity)
+//        generateLicenseFile(licenseData, "YourSecureKey16!", "/storage/emulated/0/Download/iengine.lic")
+        verifyLicense()
     }
 
     private fun setLocale(lang: LocalizationCode, activity: Activity) {
@@ -48,4 +59,6 @@ object OCR {
             activity.applicationContext.createConfigurationContext(config)
         }
     }
+
+
 }
