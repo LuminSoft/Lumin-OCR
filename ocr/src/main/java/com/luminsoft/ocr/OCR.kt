@@ -1,6 +1,7 @@
 package com.luminsoft.ocr
 
 import android.app.Activity
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import android.util.Log
@@ -28,6 +29,10 @@ object OCR {
     ) {
         Log.d("LaunchOCR", "OCR Launched Successfully")
         setLocale(OcrSDK.localizationCode, activity)
+
+        activity.startActivity(Intent(activity, FaceDetectionActivity::class.java))
+
+
     }
 
     private fun setLocale(lang: LocalizationCode, activity: Activity) {
