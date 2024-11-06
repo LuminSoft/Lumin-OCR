@@ -8,7 +8,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -40,7 +42,9 @@ class MainActivity : ComponentActivity() {
                 Column {
 
                     Button(
-                        modifier = Modifier.padding(top = 200.dp),
+                        modifier = Modifier
+                            .padding(top = 200.dp)
+                            .fillMaxWidth(0.9f),
                         onClick = {
                             initOCR(
                                 activity
