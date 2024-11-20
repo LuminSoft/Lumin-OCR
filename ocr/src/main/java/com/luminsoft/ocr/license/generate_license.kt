@@ -7,7 +7,7 @@ import java.util.Calendar
 import java.util.TimeZone
 
 
-fun encryptWithSHA512(input: String) {
+private fun encryptWithSHA512(input: String) {
     val digest = MessageDigest.getInstance("SHA-512")
     val hashBytes = digest.digest(input.toByteArray(Charsets.UTF_8))
     val hashOutput = hashBytes.joinToString("") { "%02x".format(it) }
@@ -51,7 +51,7 @@ fun parseJsonToModel(jsonString: String) {
     )
 }
 
-fun createDataToEncrypt(contractModel: ContractModel) {
+private fun createDataToEncrypt(contractModel: ContractModel) {
 
     var dataToEncrypt = "0xeN"
 

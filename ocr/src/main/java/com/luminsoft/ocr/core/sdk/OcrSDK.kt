@@ -12,8 +12,9 @@ object OcrSDK {
     var environment = OCREnvironment.STAGING
     var localizationCode = LocalizationCode.AR
 
-
     var ocrCallback: OCRCallback? = null
+    var licenseResource = 0
+    var packageId = ""
 
     private fun getBaseUrl(): String {
         return when (environment) {
@@ -27,5 +28,6 @@ object OcrSDK {
             getBaseUrl() + ":4800"
         else getBaseUrl() + ":7400/OnBoarding/"
     }
+
 
 }
