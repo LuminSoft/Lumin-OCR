@@ -8,7 +8,9 @@ import android.util.Log
 import com.luminsoft.ocr.core.models.LocalizationCode
 import com.luminsoft.ocr.core.models.OCRCallback
 import com.luminsoft.ocr.core.models.OCREnvironment
+import com.luminsoft.ocr.core.models.OCRMode
 import com.luminsoft.ocr.core.sdk.OcrSDK
+import com.luminsoft.ocr.national_id_detection.NationalIdDetection
 import java.util.Locale
 
 object OCR {
@@ -17,22 +19,41 @@ object OCR {
         environment: OCREnvironment = OCREnvironment.STAGING,
         localizationCode: LocalizationCode = LocalizationCode.EN,
         ocrCallback: OCRCallback? = null,
+        ocrMode: OCRMode = OCRMode.SMILE_LIVENESS,
     ) {
 
         OcrSDK.environment = environment
         OcrSDK.localizationCode = localizationCode
         OcrSDK.ocrCallback = ocrCallback
+        OcrSDK.ocrMode = ocrMode
+
+
     }
 
     fun launch(
         activity: Activity,
     ) {
-        Log.d("LaunchOCR", "OCR Launched Successfully")
+        Log.d("LaunchOCR", "OCR Launched Successfully for ${getModeActivity(OcrSDK.ocrMode)}")
         setLocale(OcrSDK.localizationCode, activity)
+        val targetActivity = getModeActivity(OcrSDK.ocrMode)
+        val intent = Intent(activity, targetActivity)
+        Log.d("LaunchOCR", "Intent created for: ${targetActivity.name}")
+        try {
+            activity.startActivity(intent)
+            Log.d("LaunchOCR", "startActivity called successfully")
+        } catch (e: Exception) {
+            Log.e("LaunchOCR", "Error starting activity: ${e.message}", e)
+        }
+    }
 
-        activity.startActivity(Intent(activity, FaceDetectionActivity::class.java))
 
-
+    private fun getModeActivity(ocrMode: OCRMode): Class<out Activity> {
+        return when (ocrMode) {
+            OCRMode.SMILE_LIVENESS -> FaceDetectionActivity::class.java
+            OCRMode.FACE_DETECTION -> FaceDetectionActivity::class.java
+            OCRMode.PASSPORT_DETECTION -> FaceDetectionActivity::class.java
+            OCRMode.NATIONAL_ID_DETECTION -> NationalIdDetection::class.java
+        }
     }
 
     private fun setLocale(lang: LocalizationCode, activity: Activity) {

@@ -3,6 +3,7 @@ package com.luminsoft.ocr.core.sdk
 import com.luminsoft.ocr.core.models.LocalizationCode
 import com.luminsoft.ocr.core.models.OCRCallback
 import com.luminsoft.ocr.core.models.OCREnvironment
+import com.luminsoft.ocr.core.models.OCRMode
 
 
 object OcrSDK {
@@ -11,6 +12,7 @@ object OcrSDK {
     // this info related to sdk initiation
     var environment = OCREnvironment.STAGING
     var localizationCode = LocalizationCode.AR
+    var ocrMode = OCRMode.SMILE_LIVENESS
 
 
     var ocrCallback: OCRCallback? = null
