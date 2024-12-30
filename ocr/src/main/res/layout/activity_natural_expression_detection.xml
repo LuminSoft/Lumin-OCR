@@ -4,20 +4,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/black"
-    tools:context=".FaceDetectionActivity">
+    tools:context=".natural_expression_detection.NaturalExpressionDetectionActivity">
 
+    <!-- Preview Camera View -->
     <androidx.camera.view.PreviewView
         android:id="@+id/viewCameraPreview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:scaleType="fillCenter" />
 
+    <!-- Graphic Overlay for face detection -->
     <com.luminsoft.ocr.graphic.GraphicOverlay
         android:id="@+id/viewGraphicOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Custom Circular Overlay View -->
+    <!-- Circular Overlay for visualizing the area of interest -->
     <com.luminsoft.ocr.graphic.CircularOverlayView
         android:id="@+id/circularOverlayView"
         android:layout_width="match_parent"
@@ -29,18 +31,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
-        android:background="@android:color/transparent"
-        android:gravity="center"
         android:padding="16dp"
         android:text="Center your face"
+        android:textSize="20sp"
         android:textColor="@android:color/white"
-        android:textSize="20sp" />
+        android:gravity="center"
+        android:background="@android:color/transparent" />
 
-    <!-- ImageView to display captured image -->
+    <!-- ImageView to display the captured image (full screen) -->
     <ImageView
         android:id="@+id/imageCaptured"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="gone"
         android:scaleType="centerCrop"
-        android:visibility="gone" />
+        android:padding="8dp" />
+
 </FrameLayout>

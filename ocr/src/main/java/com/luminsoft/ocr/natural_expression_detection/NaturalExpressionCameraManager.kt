@@ -1,4 +1,4 @@
-package com.luminsoft.ocr.camera
+package com.luminsoft.ocr.natural_expression_detection
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -16,20 +16,21 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
-import com.luminsoft.ocr.FaceDetectionActivity
 import com.luminsoft.ocr.graphic.CircularOverlayView
 import com.luminsoft.ocr.graphic.GraphicOverlay
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-class CameraManager(
+
+
+class NaturalExpressionCameraManager(
     private val context: Context,
     private val previewView: PreviewView,
     private val graphicOverlay: GraphicOverlay<*>,
     private val circularOverlayView: CircularOverlayView,
     private val lifecycleOwner: LifecycleOwner,
-    private val onImageCaptured: (Bitmap) -> Unit
+    private val onImageCaptured: (Bitmap) -> Unit // Callback to handle both images
 ) {
 
     private lateinit var cameraProvider: ProcessCameraProvider
@@ -39,6 +40,9 @@ class CameraManager(
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private lateinit var imageCapture: ImageCapture
 
+    // Bitmaps to store the natural and smiling expression images
+    private var naturalExpressionImage: Bitmap? = null
+    private var smilingImage: Bitmap? = null
 
     fun cameraStart() {
         val cameraProcessProvider = ProcessCameraProvider.getInstance(context)
@@ -59,11 +63,11 @@ class CameraManager(
                     .also {
                         it.setAnalyzer(
                             cameraExecutor,
-                            CameraAnalyzer(
+                            NaturalExpressionCameraAnalyzer(
                                 graphicOverlay,
                                 circularOverlayView,
                                 ::captureImage,
-                                (context as FaceDetectionActivity)::updateInstructions // Pass the instruction update callback
+                                (context as NaturalExpressionDetectionActivity)::updateInstructions
                             )
                         )
                     }
@@ -72,23 +76,20 @@ class CameraManager(
                     .requireLensFacing(cameraOption)
                     .build()
 
-                setCameraConfig(cameraProvider, cameraSelector) // Call the binding method
+                setCameraConfig(cameraProvider, cameraSelector)
             },
             ContextCompat.getMainExecutor(context)
         )
     }
 
-    private fun setCameraConfig(
-        cameraProvider: ProcessCameraProvider,
-        cameraSelector: CameraSelector
-    ) {
+    private fun setCameraConfig(cameraProvider: ProcessCameraProvider, cameraSelector: CameraSelector) {
         try {
-            cameraProvider.unbindAll() // Ensure all previous use cases are unbound
+            cameraProvider.unbindAll()
             camera = cameraProvider.bindToLifecycle(
                 lifecycleOwner,
                 cameraSelector,
                 preview,
-                imageCapture, // Ensure ImageCapture is included here
+                imageCapture,
                 imageAnalysis
             )
             preview.setSurfaceProvider(previewView.surfaceProvider)
@@ -97,8 +98,11 @@ class CameraManager(
         }
     }
 
-    fun captureImage() {
-        val photoFile = File(context.filesDir, "smiling_face_${System.currentTimeMillis()}.jpg")
+    private fun captureImage(isSmiling: Boolean) {
+        val photoFile = File(
+            context.filesDir,
+            "${if (isSmiling) "smiling" else "natural"}_face_${System.currentTimeMillis()}.jpg"
+        )
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
         imageCapture.takePicture(
@@ -110,12 +114,16 @@ class CameraManager(
 
                     // Decode the saved image into a Bitmap
                     val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
-
-                    // Apply both rotation and mirroring if needed
                     val correctedBitmap = adjustBitmapIfNeeded(photoFile.absolutePath, bitmap)
 
-                    // Use the callback to display the corrected image
-                    onImageCaptured(correctedBitmap)
+                    // Pass the captured image to the callback for display
+                    if (isSmiling) {
+                        smilingImage = correctedBitmap
+                    } else {
+                        naturalExpressionImage = correctedBitmap
+                        // Here you should call showCapturedImage or update logic to show it
+                        (context as NaturalExpressionDetectionActivity).showCapturedImage(correctedBitmap)
+                    }
                 }
 
                 override fun onError(exception: ImageCaptureException) {
@@ -125,37 +133,27 @@ class CameraManager(
         )
     }
 
+
     private fun adjustBitmapIfNeeded(imagePath: String, bitmap: Bitmap): Bitmap {
         val exif = ExifInterface(imagePath)
-
-        // Get the EXIF rotation angle
-        val rotationDegrees = when (exif.getAttributeInt(
-            ExifInterface.TAG_ORIENTATION,
-            ExifInterface.ORIENTATION_NORMAL
-        )) {
+        val rotationDegrees = when (exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {
             ExifInterface.ORIENTATION_ROTATE_90 -> 90
             ExifInterface.ORIENTATION_ROTATE_180 -> 180
             ExifInterface.ORIENTATION_ROTATE_270 -> 270
             else -> 0
         }
 
-        // Determine if the front camera is used
         val isFrontCamera = cameraOption == CameraSelector.LENS_FACING_FRONT
-
-        // Create a Matrix for the transformations
         val matrix = Matrix()
 
-        // Apply the rotation if needed
         if (rotationDegrees != 0) {
             matrix.postRotate(rotationDegrees.toFloat())
         }
 
-        // Apply horizontal mirroring if the front camera is active
         if (isFrontCamera) {
-            matrix.postScale(-1f, 1f)  // Mirror horizontally
+            matrix.postScale(-1f, 1f) // Mirror horizontally for front camera
         }
 
-        // Return the transformed bitmap
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 
@@ -164,7 +162,9 @@ class CameraManager(
     }
 
     companion object {
-        private const val TAG: String = "com.luminsoft.ocr.camera.CameraManager"
+        private const val TAG: String = "CameraManager"
         var cameraOption: Int = CameraSelector.LENS_FACING_FRONT
     }
 }
+
+

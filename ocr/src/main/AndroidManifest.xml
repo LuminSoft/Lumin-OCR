@@ -8,7 +8,7 @@
 
     <application>
         <activity
-            android:name=".FaceDetectionActivity"
+            android:name=".natural_expression_detection.NaturalExpressionDetectionActivity"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
 

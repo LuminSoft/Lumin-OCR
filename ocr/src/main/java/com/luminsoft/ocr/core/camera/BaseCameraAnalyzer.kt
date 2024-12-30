@@ -1,4 +1,4 @@
-package com.luminsoft.ocr.camera
+package com.luminsoft.ocr.core.camera
 import android.annotation.SuppressLint
 import android.graphics.Rect
 import androidx.camera.core.ImageAnalysis

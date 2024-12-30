@@ -1,4 +1,4 @@
-package com.luminsoft.ocr
+package com.luminsoft.ocr.natural_expression_detection
 
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -8,19 +8,18 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.luminsoft.ocr.camera.CameraManager
-import com.luminsoft.ocr.databinding.ActivityFaceDetectionBinding
+import com.luminsoft.ocr.databinding.ActivityNaturalExpressionDetectionBinding
 
-class FaceDetectionActivity : AppCompatActivity() {
+class NaturalExpressionDetectionActivity : AppCompatActivity() {
 
-    private lateinit var cameraManager: CameraManager
-    private val binding by lazy { ActivityFaceDetectionBinding.inflate(layoutInflater) }
+    private lateinit var cameraManager: NaturalExpressionCameraManager
+    private val binding by lazy { ActivityNaturalExpressionDetectionBinding.inflate(layoutInflater) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        cameraManager = CameraManager(
+        cameraManager = NaturalExpressionCameraManager(
             this,
             binding.viewCameraPreview,
             binding.viewGraphicOverlay,
