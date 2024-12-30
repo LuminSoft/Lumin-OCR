@@ -16,5 +16,10 @@
             android:name=".national_id_detection.NationalIdDetection"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
+
+        <activity
+            android:name=".liveness_smile_detection.LivenessSmileDetectionActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
     </application>
 </manifest>

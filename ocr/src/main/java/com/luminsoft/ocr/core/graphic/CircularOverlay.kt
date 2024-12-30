@@ -1,4 +1,4 @@
-package com.luminsoft.ocr.graphic
+package com.luminsoft.ocr.core.graphic
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet

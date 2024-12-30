@@ -10,6 +10,7 @@ import com.luminsoft.ocr.core.models.OCRCallback
 import com.luminsoft.ocr.core.models.OCREnvironment
 import com.luminsoft.ocr.core.models.OCRMode
 import com.luminsoft.ocr.core.sdk.OcrSDK
+import com.luminsoft.ocr.liveness_smile_detection.LivenessSmileDetectionActivity
 import com.luminsoft.ocr.national_id_detection.NationalIdDetection
 import com.luminsoft.ocr.natural_expression_detection.NaturalExpressionDetectionActivity
 import java.util.Locale
@@ -50,7 +51,7 @@ object OCR {
 
     private fun getModeActivity(ocrMode: OCRMode): Class<out Activity> {
         return when (ocrMode) {
-            OCRMode.SMILE_LIVENESS -> NaturalExpressionDetectionActivity::class.java
+            OCRMode.SMILE_LIVENESS -> LivenessSmileDetectionActivity::class.java
             OCRMode.NaturalExpressionDetection -> NaturalExpressionDetectionActivity::class.java
             OCRMode.PASSPORT_DETECTION -> NaturalExpressionDetectionActivity::class.java
             OCRMode.NATIONAL_ID_DETECTION -> NationalIdDetection::class.java

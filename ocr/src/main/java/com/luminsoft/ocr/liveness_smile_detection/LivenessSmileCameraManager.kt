@@ -1,4 +1,4 @@
-package com.luminsoft.ocr.natural_expression_detection
+package com.luminsoft.ocr.liveness_smile_detection
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -23,14 +23,13 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 
-
-class NaturalExpressionCameraManager(
+class LivenessSmileCameraManager(
     private val context: Context,
     private val previewView: PreviewView,
     private val graphicOverlay: GraphicOverlay<*>,
     private val circularOverlayView: CircularOverlayView,
     private val lifecycleOwner: LifecycleOwner,
-    private val onImageCaptured: (Bitmap) -> Unit // Callback to handle both images
+    private val onBothImagesCaptured: (Bitmap, Bitmap) -> Unit // Callback to handle both images
 ) {
 
     private lateinit var cameraProvider: ProcessCameraProvider
@@ -63,11 +62,11 @@ class NaturalExpressionCameraManager(
                     .also {
                         it.setAnalyzer(
                             cameraExecutor,
-                            NaturalExpressionCameraAnalyzer(
+                            LivenessSmileCameraAnalyzer(
                                 graphicOverlay,
                                 circularOverlayView,
-                                ::captureImage,
-                                (context as NaturalExpressionDetectionActivity)::updateInstructions
+                                ::captureImage, // Pass captureImage function to capture based on expression type
+                                (context as LivenessSmileDetectionActivity)::updateInstructions
                             )
                         )
                     }
@@ -98,6 +97,7 @@ class NaturalExpressionCameraManager(
         }
     }
 
+    // Updated captureImage function to handle two images based on isSmiling flag
     private fun captureImage(isSmiling: Boolean) {
         val photoFile = File(
             context.filesDir,
@@ -116,13 +116,16 @@ class NaturalExpressionCameraManager(
                     val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
                     val correctedBitmap = adjustBitmapIfNeeded(photoFile.absolutePath, bitmap)
 
-                    // Pass the captured image to the callback for display
+                    // Store the image based on the expression type
                     if (isSmiling) {
                         smilingImage = correctedBitmap
                     } else {
                         naturalExpressionImage = correctedBitmap
-                        // Here you should call showCapturedImage or update logic to show it
-                        (context as NaturalExpressionDetectionActivity).showCapturedImage(correctedBitmap)
+                    }
+
+                    // If both images are captured, call the callback to display them
+                    if (naturalExpressionImage != null && smilingImage != null) {
+                        onBothImagesCaptured(naturalExpressionImage!!, smilingImage!!)
                     }
                 }
 
@@ -132,7 +135,6 @@ class NaturalExpressionCameraManager(
             }
         )
     }
-
 
     private fun adjustBitmapIfNeeded(imagePath: String, bitmap: Bitmap): Bitmap {
         val exif = ExifInterface(imagePath)

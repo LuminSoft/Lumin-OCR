@@ -6,7 +6,7 @@ import androidx.camera.core.ImageProxy
 import com.google.android.gms.tasks.Task
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
-import com.luminsoft.ocr.graphic.GraphicOverlay
+import com.luminsoft.ocr.core.graphic.GraphicOverlay
 
 abstract class BaseCameraAnalyzer<T : List<Face>> : ImageAnalysis.Analyzer {
 

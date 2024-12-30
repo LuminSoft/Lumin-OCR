@@ -1,4 +1,4 @@
-package com.luminsoft.ocr.graphic
+package com.luminsoft.ocr.core.graphic
 /*
  * Copyright (C) The Android Open Source Project
  *
