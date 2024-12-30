@@ -50,7 +50,7 @@ object OCR {
     private fun getModeActivity(ocrMode: OCRMode): Class<out Activity> {
         return when (ocrMode) {
             OCRMode.SMILE_LIVENESS -> FaceDetectionActivity::class.java
-            OCRMode.FACE_DETECTION -> FaceDetectionActivity::class.java
+            OCRMode.NaturalExpressionDetection -> FaceDetectionActivity::class.java
             OCRMode.PASSPORT_DETECTION -> FaceDetectionActivity::class.java
             OCRMode.NATIONAL_ID_DETECTION -> NationalIdDetection::class.java
         }

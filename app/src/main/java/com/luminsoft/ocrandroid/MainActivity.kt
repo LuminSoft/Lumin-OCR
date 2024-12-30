@@ -9,9 +9,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -41,16 +41,32 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            println("onCreate")
             val activity = LocalContext.current as Activity
 
             OCRAndroidTheme {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(top = 200.dp),
+                        .fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
+
+
+                    Button(
+                        modifier = Modifier.width(240.dp),
+                        onClick = {
+                            initOCR(activity, OCRMode.NATIONAL_ID_DETECTION)
+                        },
+                        contentPadding = PaddingValues(0.dp),
+                        shape = RoundedCornerShape(12.dp),
+                    ) {
+                        Text(
+                            text = "National ID Detection",
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
                         modifier = Modifier.width(240.dp),
@@ -61,22 +77,27 @@ class MainActivity : ComponentActivity() {
                         shape = RoundedCornerShape(12.dp),
                     ) {
                         Text(
-                            text = "Smile Liveness Check",
+                            text = "Liveness Smile Detection",
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
+
+
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
 
                     Button(
                         modifier = Modifier.width(240.dp),
 
                         onClick = {
-                            initOCR(activity, OCRMode.NATIONAL_ID_DETECTION)
+                            initOCR(activity, OCRMode.NaturalExpressionDetection)
                         },
                         contentPadding = PaddingValues(0.dp),
                         shape = RoundedCornerShape(12.dp),
                     ) {
                         Text(
-                            text = "Detect National ID",
+                            text = "Natural Expression Detection",
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
