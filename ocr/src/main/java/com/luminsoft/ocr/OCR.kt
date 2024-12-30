@@ -59,21 +59,19 @@ object OCR {
     }
 
     private fun setLocale(lang: LocalizationCode, activity: Activity) {
-        val locale = if (lang != LocalizationCode.AR) {
+        val locale = if (lang.name.lowercase() != LocalizationCode.AR.name.lowercase()) {
             Locale("en")
         } else {
             Locale("ar")
         }
-        Locale.setDefault(locale)
 
-        val config = Configuration(activity.resources.configuration)
+        val config: Configuration = activity.baseContext.resources.configuration
         config.setLocale(locale)
 
-        activity.createConfigurationContext(config)
-
-        // Apply for app-wide locale change if needed
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-            activity.applicationContext.createConfigurationContext(config)
-        }
+        activity.baseContext.resources.updateConfiguration(
+            config,
+            activity.baseContext.resources.displayMetrics
+        )
     }
+
 }

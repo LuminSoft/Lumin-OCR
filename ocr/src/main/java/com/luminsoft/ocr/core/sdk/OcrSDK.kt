@@ -11,9 +11,8 @@ object OcrSDK {
 
     // this info related to sdk initiation
     var environment = OCREnvironment.STAGING
-    var localizationCode = LocalizationCode.AR
+    var localizationCode = LocalizationCode.EN
     var ocrMode = OCRMode.SMILE_LIVENESS
-
 
     var ocrCallback: OCRCallback? = null
 

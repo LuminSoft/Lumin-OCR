@@ -1,0 +1,10 @@
+
+<resources>
+    <string name="message_more_light">مطلوب إضاءة أكثر</string>
+    <string name="message_avoid_reflection">تجنب الانعكاس</string>
+    <string name="message_hold_still_stabilize">ثبّت الكاميرا</string>
+    <string name="message_hold_still">ابق ثابتًا</string>
+    <string name="message_center_document">ضع المستند في المركز</string>
+</resources>
+
+

@@ -2,6 +2,10 @@ package com.luminsoft.ocr.national_id_detection
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Typeface
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.os.Bundle
@@ -59,6 +63,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.viewinterop.AndroidView
+import com.luminsoft.ocr.R
+import org.opencv.android.Utils
 import org.opencv.core.MatOfDouble
 import org.opencv.core.MatOfFloat
 import org.opencv.core.MatOfInt
@@ -71,10 +77,7 @@ class NationalIdDetection : ComponentActivity(), CameraBridgeViewBase.CvCameraVi
 
     private lateinit var rgbaMat: Mat
     private lateinit var rgbaMatFinal: Mat
-    private var cardDetectedStartTime: Long = 0L
-    private val detectionThreshold = 200
-    private var frameCounter = 0
-    private val frameSkipInterval = 1 // Skip every 1 frames
+
 
     // Add these properties to your MainActivity class
     private val BLUR_THRESHOLD = 220.0  // Adjust this value based on testing
@@ -224,22 +227,14 @@ class NationalIdDetection : ComponentActivity(), CameraBridgeViewBase.CvCameraVi
         )
 
         // Sum of bright pixels near maximum intensity
-        val totalPixels = roiMat.rows() * roiMat.cols()
         val brightPixels = Core.sumElems(hist.rowRange(240, 256)).`val`[0]
 
         // Threshold for flash detection (e.g., 10% of pixels are bright)
         val brightnessThreshold = 15
-        println("brightPixels => $brightPixels  brightnessThreshold => $brightnessThreshold")
         return brightPixels > brightnessThreshold
     }
 
     override fun onCameraFrame(inputFrame: CameraBridgeViewBase.CvCameraViewFrame): Mat {
-        frameCounter++
-
-        // Skip frame processing for optimization
-        if (frameCounter % frameSkipInterval != 0) {
-            return inputFrame.rgba()
-        }
 
         rgbaMat = inputFrame.rgba()
         rgbaMatFinal = inputFrame.rgba()
@@ -260,7 +255,7 @@ class NationalIdDetection : ComponentActivity(), CameraBridgeViewBase.CvCameraVi
         val roiMat = Mat(grayMat, roi)
 
         // Detect if lighting is poor in ROI
-        val lightingMessage = if (isPoorLighting(roiMat)) "More light needed" else null
+        val lightingMessage = if (isPoorLighting(roiMat)) getString(R.string.message_more_light) else null
 
         // Apply blur to reduce noise
         Imgproc.GaussianBlur(roiMat, roiMat, Size(3.0, 3.0), 0.0)
@@ -370,13 +365,12 @@ class NationalIdDetection : ComponentActivity(), CameraBridgeViewBase.CvCameraVi
 
         // Display appropriate message
         val message = when {
-            flashDetected -> "Avoid reflection"
+            flashDetected -> getString(R.string.message_avoid_reflection)
             lightingMessage != null -> lightingMessage
-            cardDetected && isBlurry -> "Hold Still - Stabilize Camera"
-            cardDetected -> "Hold Still"
-            else -> "Center Document"
+            cardDetected && isBlurry -> getString(R.string.message_hold_still_stabilize)
+            cardDetected -> getString(R.string.message_hold_still)
+            else -> getString(R.string.message_center_document)
         }
-
         displayCenteredText(rgbaMat, message, isBlurry)
 
         // Clean up resources
@@ -531,7 +525,6 @@ class NationalIdDetection : ComponentActivity(), CameraBridgeViewBase.CvCameraVi
 
         // Calculate Laplacian variance
         Imgproc.Laplacian(gray, laplacian, CvType.CV_64F)
-        val mean = Core.mean(laplacian)
         val stdDev = MatOfDouble()
         Core.meanStdDev(laplacian, MatOfDouble(), stdDev)
 
@@ -547,7 +540,8 @@ class NationalIdDetection : ComponentActivity(), CameraBridgeViewBase.CvCameraVi
     }
 
     // Helper to display text message
-    private fun displayCenteredText(mat: Mat, text: String, isBlurry: Boolean = false) {
+ /*   private fun displayCenteredText(mat: Mat, text: String, isBlurry: Boolean = false) {
+        println("radwan $text")
         val font = Imgproc.FONT_HERSHEY_SIMPLEX
         val textSize = 1.0
         val textColor = Scalar(255.0, 255.0, 255.0)
@@ -567,7 +561,36 @@ class NationalIdDetection : ComponentActivity(), CameraBridgeViewBase.CvCameraVi
             textColor,
             textThickness
         )
+    }*/
+    private fun displayCenteredText(mat: Mat, text: String, isBlurry: Boolean = false) {
+        // Create a bitmap with the same size as the Mat
+        val bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888)
+        Utils.matToBitmap(mat, bitmap) // Convert Mat to Bitmap to retain original content
+
+        val canvas = Canvas(bitmap)
+
+        val paint = Paint().apply {
+            isAntiAlias = true
+            textSize = 48f // Adjust as needed
+            color = android.graphics.Color.WHITE
+            textAlign = Paint.Align.CENTER
+            typeface = Typeface.create("sans-serif", Typeface.NORMAL) // Ensure font supports Arabic
+        }
+
+        // Handle bidirectional text for Arabic
+        val directionAdjustedText = "\u202B$text"
+
+        // Calculate text position
+        val xPos = canvas.width / 2f
+        val yPos = (canvas.height / 2f - (paint.descent() + paint.ascent()) / 2)
+
+        // Draw the text over the original image
+        canvas.drawText(directionAdjustedText, xPos, yPos, paint)
+
+        // Convert the updated bitmap back to Mat
+        Utils.bitmapToMat(bitmap, mat)
     }
+
 
 }
 

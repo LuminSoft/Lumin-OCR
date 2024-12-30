@@ -9,14 +9,17 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,9 +35,26 @@ import com.luminsoft.ocr.core.models.OCRSuccessModel
 
 import com.luminsoft.ocrandroid.ui.theme.OCRAndroidTheme
 
+
+var isArabic = mutableStateOf(false)
+
+
 class MainActivity : ComponentActivity() {
 
     var text = mutableStateOf("")
+
+    @Composable
+    fun ArabicCheckbox() {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = isArabic.value,
+                onCheckedChange = { isChecked -> isArabic.value = isChecked }
+            )
+            Text("is Arabic")
+        }
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,6 +121,10 @@ class MainActivity : ComponentActivity() {
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
+
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                    ArabicCheckbox()
                 }
             }
         }
@@ -115,6 +139,7 @@ class MainActivity : ComponentActivity() {
 
             OCR.init(
                 environment = OCREnvironment.STAGING,
+                localizationCode = if (isArabic.value) LocalizationCode.AR else LocalizationCode.EN,
                 ocrMode = ocrMode,
                 ocrCallback = object :
                     OCRCallback {
@@ -128,7 +153,6 @@ class MainActivity : ComponentActivity() {
 
                     }
                 },
-                localizationCode = LocalizationCode.EN,
             )
         } catch (e: Exception) {
             Log.e("error", e.toString())

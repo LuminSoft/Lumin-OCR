@@ -1,0 +1,8 @@
+
+<resources>
+    <string name="message_more_light">More light needed</string>
+    <string name="message_avoid_reflection">Avoid reflection</string>
+    <string name="message_hold_still_stabilize">Hold Still - Stabilize Camera</string>
+    <string name="message_hold_still">Hold Still</string>
+    <string name="message_center_document">Center Document</string>
+</resources>
