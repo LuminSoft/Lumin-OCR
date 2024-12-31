@@ -73,7 +73,7 @@ class MainActivity : ComponentActivity() {
 
 
                     Button(
-                        modifier = Modifier.width(240.dp),
+                        modifier = Modifier.width(260.dp),
                         onClick = {
                             initOCR(activity, OCRMode.NATIONAL_ID_DETECTION)
                         },
@@ -89,7 +89,7 @@ class MainActivity : ComponentActivity() {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
-                        modifier = Modifier.width(240.dp),
+                        modifier = Modifier.width(260.dp),
                         onClick = {
                             initOCR(activity, OCRMode.SMILE_LIVENESS)
                         },
@@ -108,7 +108,7 @@ class MainActivity : ComponentActivity() {
 
 
                     Button(
-                        modifier = Modifier.width(240.dp),
+                        modifier = Modifier.width(260.dp),
 
                         onClick = {
                             initOCR(activity, OCRMode.NaturalExpressionDetection)

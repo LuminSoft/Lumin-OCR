@@ -1,5 +1,6 @@
 package com.luminsoft.ocr.natural_expression_detection
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Rect
 import android.os.Handler
@@ -12,6 +13,7 @@ import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import com.luminsoft.ocr.R
 import com.luminsoft.ocr.core.camera.BaseCameraAnalyzer
 import com.luminsoft.ocr.core.graphic.CircularOverlayView
 import com.luminsoft.ocr.core.graphic.GraphicOverlay
@@ -19,6 +21,7 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 class NaturalExpressionCameraAnalyzer(
+    private val context: Context,
     private val overlay: GraphicOverlay<*>,
     private val circularOverlayView: CircularOverlayView,
     private val captureCallback: (Boolean) -> Unit, // Callback for capturing image
@@ -27,7 +30,6 @@ class NaturalExpressionCameraAnalyzer(
 
     private var imageWidth: Int = 0
     private var imageHeight: Int = 0
-    private val naturalExpressionHandler = Handler(Looper.getMainLooper())
 
     private var isNaturalExpressionDetected = false
     private var naturalExpressionStartTime: Long = 0
@@ -74,12 +76,12 @@ class NaturalExpressionCameraAnalyzer(
 
         when {
             results.isEmpty() -> {
-                updateInstructionsCallback("No face detected")
+                updateInstructionsCallback(context.getString(R.string.instruction_no_face))
                 circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
                 resetNaturalExpressionState()
             }
             results.size > 1 -> {
-                updateInstructionsCallback("Only one face required")
+                updateInstructionsCallback(context.getString(R.string.instruction_one_face))
                 circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
                 resetNaturalExpressionState()
             }
@@ -90,7 +92,7 @@ class NaturalExpressionCameraAnalyzer(
                         handleNaturalExpression(face)
                     }
                 } else {
-                    updateInstructionsCallback("Move Center")
+                    updateInstructionsCallback(context.getString(R.string.instruction_move_center))
                     circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
                     resetNaturalExpressionState()
                 }
@@ -105,7 +107,7 @@ class NaturalExpressionCameraAnalyzer(
             // Check if the user is smiling
             if (face.smilingProbability != null && face.smilingProbability!! > 0.5) {
                 // If the user is smiling, ask them to keep a natural expression and reset the timer
-                updateInstructionsCallback("Please keep a natural expression")
+                updateInstructionsCallback(context.getString(R.string.instruction_please_keep_natural_expression))
                 circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
                 resetNaturalExpressionState()
             } else {
@@ -113,7 +115,7 @@ class NaturalExpressionCameraAnalyzer(
                 if (!isNaturalExpressionDetected) {
                     isNaturalExpressionDetected = true
                     naturalExpressionStartTime = System.currentTimeMillis()
-                    updateInstructionsCallback("Keep a natural expression")
+                    updateInstructionsCallback(context.getString(R.string.instruction_keep_natural))
                     circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#00ff00"))
                 } else {
                     // Check if the user has held a natural expression for the required time
@@ -134,12 +136,12 @@ class NaturalExpressionCameraAnalyzer(
         val pitch = face.headEulerAngleX
 
         return if (yaw < -10 || yaw > 10) {
-            updateInstructionsCallback("Look straight")
+            updateInstructionsCallback(context.getString(R.string.instruction_look_straight))
             circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
             resetNaturalExpressionState()
             false
         } else if (pitch < -15 || pitch > 15) {
-            updateInstructionsCallback("Look straight")
+            updateInstructionsCallback(context.getString(R.string.instruction_look_straight))
             circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
             resetNaturalExpressionState()
             false
@@ -153,13 +155,13 @@ class NaturalExpressionCameraAnalyzer(
 
         return when {
             faceWidth < MIN_FACE_SIZE_THRESHOLD -> {
-                updateInstructionsCallback("Move Closer")
+                updateInstructionsCallback(context.getString(R.string.instruction_move_closer))
                 circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
                 resetNaturalExpressionState()
                 false
             }
             faceWidth > MAX_FACE_SIZE_THRESHOLD -> {
-                updateInstructionsCallback("Move Back")
+                updateInstructionsCallback(context.getString(R.string.instruction_move_back))
                 circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
                 resetNaturalExpressionState()
                 false

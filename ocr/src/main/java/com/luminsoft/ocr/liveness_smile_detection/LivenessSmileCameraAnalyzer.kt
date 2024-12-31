@@ -1,5 +1,6 @@
 package com.luminsoft.ocr.liveness_smile_detection
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Rect
 import android.os.Handler
@@ -12,6 +13,7 @@ import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import com.luminsoft.ocr.R
 import com.luminsoft.ocr.core.camera.BaseCameraAnalyzer
 import com.luminsoft.ocr.core.graphic.CircularOverlayView
 import com.luminsoft.ocr.core.graphic.GraphicOverlay
@@ -19,6 +21,7 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 class LivenessSmileCameraAnalyzer(
+    private val context: Context,
     private val overlay: GraphicOverlay<*>,
     private val circularOverlayView: CircularOverlayView,
     private val captureCallback: (Boolean) -> Unit, // Callback that accepts a Boolean for the type of expression
@@ -80,14 +83,14 @@ class LivenessSmileCameraAnalyzer(
 
         when {
             results.isEmpty() -> {
-                updateInstructionsCallback("No face detected")
+                updateInstructionsCallback(context.getString(R.string.instruction_no_face))
                 circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
 
                 resetNaturalExpressionState()
             }
 
             results.size > 1 -> {
-                updateInstructionsCallback("Only one face required")
+                updateInstructionsCallback(context.getString(R.string.instruction_one_face))
                 circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
 
                 resetNaturalExpressionState()
@@ -102,7 +105,7 @@ class LivenessSmileCameraAnalyzer(
                         handleExpressions(face)
                     }
                 } else {
-                    updateInstructionsCallback("Move Center")
+                    updateInstructionsCallback(context.getString(R.string.instruction_move_center))
                     circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
                     resetNaturalExpressionState()
                 }
@@ -121,13 +124,13 @@ class LivenessSmileCameraAnalyzer(
 
         return if (yaw < -10 || yaw > 10) {
 
-            updateInstructionsCallback("Look straight")
+            updateInstructionsCallback(context.getString(R.string.instruction_look_straight))
             circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
 
             resetNaturalExpressionState()
             false
         } else if (pitch < -15 || pitch > 15) {
-            updateInstructionsCallback("Look straight")
+            updateInstructionsCallback(context.getString(R.string.instruction_look_straight))
             circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
 
             resetNaturalExpressionState()
@@ -143,14 +146,14 @@ class LivenessSmileCameraAnalyzer(
 
         return when {
             faceWidth < MIN_FACE_SIZE_THRESHOLD -> {
-                updateInstructionsCallback("Move Closer")
+                updateInstructionsCallback(context.getString(R.string.instruction_move_closer))
                 circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
                 resetNaturalExpressionState()
                 false
             }
 
             faceWidth > MAX_FACE_SIZE_THRESHOLD -> {
-                updateInstructionsCallback("Move Back")
+                updateInstructionsCallback(context.getString(R.string.instruction_move_back))
                 circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
 
                 resetNaturalExpressionState()
@@ -169,7 +172,7 @@ class LivenessSmileCameraAnalyzer(
             handleSmilingExpression()
         } else if (!awaitingSmile) {
             resetNaturalExpressionState()
-            updateInstructionsCallback("Please keep a natural expression")
+            updateInstructionsCallback(context.getString(R.string.instruction_please_keep_natural_expression))
 
             circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
 
@@ -181,7 +184,7 @@ class LivenessSmileCameraAnalyzer(
         if (!isNaturalExpressionDetected) {
             isNaturalExpressionDetected = true
             naturalExpressionStartTime = System.currentTimeMillis()
-            updateInstructionsCallback("Keep a natural expression")
+            updateInstructionsCallback(context.getString(R.string.instruction_keep_natural))
             circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
         } else {
             val currentTime = System.currentTimeMillis()
@@ -189,7 +192,7 @@ class LivenessSmileCameraAnalyzer(
                 captureCallback(false) // Capture natural expression image
                 awaitingSmile = true
                 capturingNaturalExpression = false
-                updateInstructionsCallback("Now, please smile!")
+                updateInstructionsCallback(context.getString(R.string.instruction_smile_now))
                 circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#00ff00"))
             }
         }
@@ -197,7 +200,7 @@ class LivenessSmileCameraAnalyzer(
 
     // Handle smiling expression detection and capture
     private fun handleSmilingExpression() {
-        updateInstructionsCallback("Good, Hold still")
+        updateInstructionsCallback(context.getString(R.string.message_hold_still))
         captureCallback(true) // Capture smiling image
         naturalExpressionHandler.postDelayed({
             resetNaturalExpressionState()
@@ -214,9 +217,6 @@ class LivenessSmileCameraAnalyzer(
 
     // Helper function to check if the face is within the circular overlay
     private fun isFaceWithinCircle(boundingBox: Rect): Boolean {
-        // Log face bounding box dimensions for debugging
-        Log.d(TAG, "BoundingBox Center: (${boundingBox.centerX()}, ${boundingBox.centerY()})")
-
         // Map the face center coordinates to the overlay view space
         val mappedCenterX = mapX(boundingBox.centerX())
         val mappedCenterY = mapY(boundingBox.centerY())
@@ -230,9 +230,6 @@ class LivenessSmileCameraAnalyzer(
             Math.pow((mappedCenterX - overlayCenterX).toDouble(), 2.0) +
                     Math.pow((mappedCenterY - overlayCenterY).toDouble(), 2.0)
         )
-
-        // Log the distance and radius for debugging
-        Log.d(TAG, "Distance to Overlay Center: $distance, DistanceThreshold: $DistanceThreshold")
 
         // Check if the distance is within the circle's radius
         return distance <= DistanceThreshold

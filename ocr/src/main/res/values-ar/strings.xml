@@ -5,6 +5,16 @@
     <string name="message_hold_still_stabilize">ثبّت الكاميرا</string>
     <string name="message_hold_still">ابق ثابتًا</string>
     <string name="message_center_document">ضع المستند في المركز</string>
+    <string name="instruction_smile_now">الآن، من فضلك ابتسم!</string>
+
+    <string name="instruction_no_face">لا يوجد وجه</string>
+    <string name="instruction_one_face">يتطلب وجهًا واحدًا فقط</string>
+    <string name="instruction_move_center">تحرك إلى المركز</string>
+    <string name="instruction_keep_natural">حافظ على تعبير طبيعي</string>
+    <string name="instruction_please_keep_natural_expression">يرجى الحفاظ على تعبير طبيعي</string>
+    <string name="instruction_look_straight">انظر للأمام</string>
+    <string name="instruction_move_closer">اقترب أكثر</string>
+    <string name="instruction_move_back">تراجع للخلف</string>
 </resources>
 
 

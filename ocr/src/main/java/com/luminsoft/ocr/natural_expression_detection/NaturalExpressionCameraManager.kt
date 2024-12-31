@@ -64,6 +64,7 @@ class NaturalExpressionCameraManager(
                         it.setAnalyzer(
                             cameraExecutor,
                             NaturalExpressionCameraAnalyzer(
+                                context,
                                 graphicOverlay,
                                 circularOverlayView,
                                 ::captureImage,

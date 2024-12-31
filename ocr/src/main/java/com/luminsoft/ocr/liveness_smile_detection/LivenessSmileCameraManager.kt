@@ -63,6 +63,7 @@ class LivenessSmileCameraManager(
                         it.setAnalyzer(
                             cameraExecutor,
                             LivenessSmileCameraAnalyzer(
+                                context,
                                 graphicOverlay,
                                 circularOverlayView,
                                 ::captureImage, // Pass captureImage function to capture based on expression type
