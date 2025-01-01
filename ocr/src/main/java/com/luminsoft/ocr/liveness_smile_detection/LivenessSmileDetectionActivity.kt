@@ -26,7 +26,7 @@ class LivenessSmileDetectionActivity : AppCompatActivity() {
             binding.viewGraphicOverlay,
             binding.circularOverlayView,
             this,
-            ::showCapturedImages // Pass callback to show both captured images
+//            ::showCapturedImages // Pass callback to show both captured images
         )
 
         askCameraPermission()

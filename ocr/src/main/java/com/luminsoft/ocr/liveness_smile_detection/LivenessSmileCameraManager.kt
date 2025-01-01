@@ -16,8 +16,13 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.luminsoft.ocr.R
 import com.luminsoft.ocr.core.graphic.CircularOverlayView
 import com.luminsoft.ocr.core.graphic.GraphicOverlay
+import com.luminsoft.ocr.core.models.OCRFailedModel
+import com.luminsoft.ocr.core.models.OCRSuccessModel
+import com.luminsoft.ocr.core.sdk.OcrSDK
+import com.luminsoft.ocr.natural_expression_detection.NaturalExpressionDetectionActivity
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -29,7 +34,6 @@ class LivenessSmileCameraManager(
     private val graphicOverlay: GraphicOverlay<*>,
     private val circularOverlayView: CircularOverlayView,
     private val lifecycleOwner: LifecycleOwner,
-    private val onBothImagesCaptured: (Bitmap, Bitmap) -> Unit // Callback to handle both images
 ) {
 
     private lateinit var cameraProvider: ProcessCameraProvider
@@ -38,6 +42,8 @@ class LivenessSmileCameraManager(
     private lateinit var camera: Camera
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private lateinit var imageCapture: ImageCapture
+
+    private var isCallbackExecuted = false
 
     // Bitmaps to store the natural and smiling expression images
     private var naturalExpressionImage: Bitmap? = null
@@ -82,7 +88,10 @@ class LivenessSmileCameraManager(
         )
     }
 
-    private fun setCameraConfig(cameraProvider: ProcessCameraProvider, cameraSelector: CameraSelector) {
+    private fun setCameraConfig(
+        cameraProvider: ProcessCameraProvider,
+        cameraSelector: CameraSelector
+    ) {
         try {
             cameraProvider.unbindAll()
             camera = cameraProvider.bindToLifecycle(
@@ -100,6 +109,8 @@ class LivenessSmileCameraManager(
 
     // Updated captureImage function to handle two images based on isSmiling flag
     private fun captureImage(isSmiling: Boolean) {
+        if (!this::imageCapture.isInitialized || isCallbackExecuted && smilingImage != null) return
+
         val photoFile = File(
             context.filesDir,
             "${if (isSmiling) "smiling" else "natural"}_face_${System.currentTimeMillis()}.jpg"
@@ -111,6 +122,8 @@ class LivenessSmileCameraManager(
             ContextCompat.getMainExecutor(context),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    if (isCallbackExecuted && smilingImage != null) return
+                    isCallbackExecuted = true
                     Log.i(TAG, "Image captured: ${photoFile.absolutePath}")
 
                     // Decode the saved image into a Bitmap
@@ -126,11 +139,42 @@ class LivenessSmileCameraManager(
 
                     // If both images are captured, call the callback to display them
                     if (naturalExpressionImage != null && smilingImage != null) {
-                        onBothImagesCaptured(naturalExpressionImage!!, smilingImage!!)
+                        OcrSDK.ocrCallback?.success(
+                            OCRSuccessModel(
+                                naturalExpressionImage = naturalExpressionImage,
+                                livenessSmileExpressionImage = smilingImage,
+                                ocrMessage = context.getString(R.string.captured_successfully),
+                            )
+                        )
+
+                        (context as LivenessSmileDetectionActivity).run {
+                            ContextCompat.getMainExecutor(this).execute {
+                                cameraStop()
+                                finish()
+                            }
+                        }
+
                     }
                 }
 
                 override fun onError(exception: ImageCaptureException) {
+
+                    if (isCallbackExecuted) return
+                    isCallbackExecuted = true
+
+                    OcrSDK.ocrCallback?.error(
+                        OCRFailedModel(
+                            exception.message.toString(),
+                            exception.message
+                        )
+                    )
+
+                    (context as LivenessSmileDetectionActivity).run {
+                        ContextCompat.getMainExecutor(this).execute {
+                            cameraStop()
+                            finish()
+                        }
+                    }
                     Log.e(TAG, "Image capture failed: ${exception.message}", exception)
                 }
             }
@@ -139,7 +183,10 @@ class LivenessSmileCameraManager(
 
     private fun adjustBitmapIfNeeded(imagePath: String, bitmap: Bitmap): Bitmap {
         val exif = ExifInterface(imagePath)
-        val rotationDegrees = when (exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {
+        val rotationDegrees = when (exif.getAttributeInt(
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.ORIENTATION_NORMAL
+        )) {
             ExifInterface.ORIENTATION_ROTATE_90 -> 90
             ExifInterface.ORIENTATION_ROTATE_180 -> 180
             ExifInterface.ORIENTATION_ROTATE_270 -> 270
@@ -169,5 +216,6 @@ class LivenessSmileCameraManager(
         var cameraOption: Int = CameraSelector.LENS_FACING_FRONT
     }
 }
+
 
 

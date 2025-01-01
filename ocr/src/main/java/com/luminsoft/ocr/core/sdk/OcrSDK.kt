@@ -8,7 +8,6 @@ import com.luminsoft.ocr.core.models.OCRMode
 
 object OcrSDK {
 
-
     // this info related to sdk initiation
     var environment = OCREnvironment.STAGING
     var localizationCode = LocalizationCode.EN

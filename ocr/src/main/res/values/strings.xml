@@ -7,6 +7,9 @@
     <string name="message_center_document">Center Document</string>
     <string name="instruction_smile_now">Now, please smile!</string>
 
+
+    <string name="captured_successfully">Image picked successfully</string>
+
     <string name="instruction_no_face">No face detected</string>
     <string name="instruction_one_face">Only one face required</string>
     <string name="instruction_move_center">Move Center</string>

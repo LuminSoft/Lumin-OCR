@@ -16,8 +16,12 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.luminsoft.ocr.R
 import com.luminsoft.ocr.core.graphic.CircularOverlayView
 import com.luminsoft.ocr.core.graphic.GraphicOverlay
+import com.luminsoft.ocr.core.models.OCRFailedModel
+import com.luminsoft.ocr.core.models.OCRSuccessModel
+import com.luminsoft.ocr.core.sdk.OcrSDK
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -30,7 +34,6 @@ class NaturalExpressionCameraManager(
     private val graphicOverlay: GraphicOverlay<*>,
     private val circularOverlayView: CircularOverlayView,
     private val lifecycleOwner: LifecycleOwner,
-    private val onImageCaptured: (Bitmap) -> Unit // Callback to handle both images
 ) {
 
     private lateinit var cameraProvider: ProcessCameraProvider
@@ -40,9 +43,7 @@ class NaturalExpressionCameraManager(
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     private lateinit var imageCapture: ImageCapture
 
-    // Bitmaps to store the natural and smiling expression images
-    private var naturalExpressionImage: Bitmap? = null
-    private var smilingImage: Bitmap? = null
+    private var isCallbackExecuted = false
 
     fun cameraStart() {
         val cameraProcessProvider = ProcessCameraProvider.getInstance(context)
@@ -99,7 +100,11 @@ class NaturalExpressionCameraManager(
         }
     }
 
+
+
     private fun captureImage(isSmiling: Boolean) {
+        if (!this::imageCapture.isInitialized || isCallbackExecuted) return
+
         val photoFile = File(
             context.filesDir,
             "${if (isSmiling) "smiling" else "natural"}_face_${System.currentTimeMillis()}.jpg"
@@ -111,28 +116,113 @@ class NaturalExpressionCameraManager(
             ContextCompat.getMainExecutor(context),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    Log.i(TAG, "Image captured: ${photoFile.absolutePath}")
+                    if (isCallbackExecuted) return
+                    isCallbackExecuted = true
 
-                    // Decode the saved image into a Bitmap
                     val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
                     val correctedBitmap = adjustBitmapIfNeeded(photoFile.absolutePath, bitmap)
 
-                    // Pass the captured image to the callback for display
-                    if (isSmiling) {
-                        smilingImage = correctedBitmap
-                    } else {
-                        naturalExpressionImage = correctedBitmap
-                        // Here you should call showCapturedImage or update logic to show it
-                        (context as NaturalExpressionDetectionActivity).showCapturedImage(correctedBitmap)
+                    OcrSDK.ocrCallback?.success(
+                        OCRSuccessModel(
+                            naturalExpressionImage = correctedBitmap,
+                            ocrMessage = context.getString(R.string.captured_successfully),
+                        )
+                    )
+
+                    (context as NaturalExpressionDetectionActivity).run {
+                        ContextCompat.getMainExecutor(this).execute {
+                            cameraStop()
+                            finish()
+                        }
                     }
                 }
 
                 override fun onError(exception: ImageCaptureException) {
-                    Log.e(TAG, "Image capture failed: ${exception.message}", exception)
+                    if (isCallbackExecuted) return
+                    isCallbackExecuted = true
+
+                    OcrSDK.ocrCallback?.error(
+                        OCRFailedModel(
+                            exception.message.toString(),
+                            exception.message
+                        )
+                    )
+
+                    (context as NaturalExpressionDetectionActivity).run {
+                        ContextCompat.getMainExecutor(this).execute {
+                            cameraStop()
+                            finish()
+                        }
+                    }
                 }
             }
         )
     }
+
+
+
+    /*   private fun captureImage(isSmiling: Boolean) {
+           val photoFile = File(
+               context.filesDir,
+               "${if (isSmiling) "smiling" else "natural"}_face_${System.currentTimeMillis()}.jpg"
+           )
+           val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+           imageCapture.takePicture(
+               outputOptions,
+               ContextCompat.getMainExecutor(context),
+               object : ImageCapture.OnImageSavedCallback {
+                   override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                       Log.i(TAG, "Image captured: ${photoFile.absolutePath}")
+
+                       val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
+                       val correctedBitmap = adjustBitmapIfNeeded(photoFile.absolutePath, bitmap)
+
+                       OcrSDK.ocrCallback?.success(
+                           OCRSuccessModel(
+                               naturalExpressionImage = correctedBitmap,
+                               ocrMessage =
+                               context.getString(R.string.captured_successfully),
+                           )
+                       )
+                       (context as NaturalExpressionDetectionActivity).finish()
+
+                       ContextCompat.getMainExecutor(context).execute {
+                           cameraStop()
+                       }
+                       *//*
+                                        // Decode the saved image into a Bitmap
+                                        val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
+                                        val correctedBitmap = adjustBitmapIfNeeded(photoFile.absolutePath, bitmap)
+
+                                        // Pass the captured image to the callback for display
+                                        if (isSmiling) {
+                                            smilingImage = correctedBitmap
+                                        } else {
+                                            naturalExpressionImage = correctedBitmap
+                                            // Here you should call showCapturedImage or update logic to show it
+                                            (context as NaturalExpressionDetectionActivity).showCapturedImage(correctedBitmap)
+                                        }*//*
+                }
+
+                override fun onError(exception: ImageCaptureException) {
+
+                    OcrSDK.ocrCallback?.error(
+                        OCRFailedModel(
+                            exception.message.toString(),
+                            exception.message
+                        )
+                    )
+                    (context as NaturalExpressionDetectionActivity).finish()
+
+                    ContextCompat.getMainExecutor(context).execute {
+                        cameraStop()
+                    }
+                    Log.e(TAG, "Image capture failed: ${exception.message}", exception)
+                }
+            }
+        )
+    }*/
 
 
     private fun adjustBitmapIfNeeded(imagePath: String, bitmap: Bitmap): Bitmap {
@@ -159,7 +249,13 @@ class NaturalExpressionCameraManager(
     }
 
     fun cameraStop() {
-        cameraProvider.unbindAll()
+        if (this::cameraProvider.isInitialized) {
+            try {
+                cameraProvider.unbindAll()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error during camera stop: ${e.message}", e)
+            }
+        }
     }
 
     companion object {

@@ -125,6 +125,11 @@ class MainActivity : ComponentActivity() {
 
                     Spacer(modifier = Modifier.height(24.dp))
                     ArabicCheckbox()
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(
+                        text = text.value,
+                        style = MaterialTheme.typography.titleMedium,
+                    )
                 }
             }
         }
@@ -144,12 +149,14 @@ class MainActivity : ComponentActivity() {
                 ocrCallback = object :
                     OCRCallback {
                     override fun success(ocrSuccessModel: OCRSuccessModel) {
-                        text.value =
-                            "OCR Message: ${ocrSuccessModel.ocrMessage}"
+//                        Log.d("OCRCallback", "Nature image :${ocrSuccessModel.naturalExpressionImage}\nSmile image :${ocrSuccessModel.livenessSmileExpressionImage}")
+
+                        text.value = "OCR Message: ${ocrSuccessModel.ocrMessage}"
+
                     }
 
                     override fun error(ocrFailedModel: OCRFailedModel) {
-                        text.value = ocrFailedModel.failureMessage
+                        text.value =  "OCR Error: ${ocrFailedModel.failureMessage}"
 
                     }
                 },

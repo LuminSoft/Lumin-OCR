@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.luminsoft.ocr.databinding.ActivityNaturalExpressionDetectionBinding
+import java.io.File
 
 class NaturalExpressionDetectionActivity : AppCompatActivity() {
 
@@ -25,7 +26,6 @@ class NaturalExpressionDetectionActivity : AppCompatActivity() {
             binding.viewGraphicOverlay,
             binding.circularOverlayView,
             this,
-            ::showCapturedImage // Pass callback to show captured image
         )
 
         askCameraPermission()
@@ -65,17 +65,4 @@ class NaturalExpressionDetectionActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Display the captured image in the ImageView and stop the camera.
-     */
-    fun showCapturedImage(bitmap: Bitmap) {
-        runOnUiThread {
-            binding.viewCameraPreview.visibility = View.GONE
-            binding.viewGraphicOverlay.visibility = View.GONE
-            binding.imageCaptured.setImageBitmap(bitmap)
-            binding.imageCaptured.visibility = View.VISIBLE
-
-            cameraManager.cameraStop()
-        }
-    }
 }

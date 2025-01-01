@@ -7,6 +7,8 @@
     <string name="message_center_document">ضع المستند في المركز</string>
     <string name="instruction_smile_now">الآن، من فضلك ابتسم!</string>
 
+    <string name="captured_successfully">تم التقاط الصورة بنجاح</string>
+
     <string name="instruction_no_face">لا يوجد وجه</string>
     <string name="instruction_one_face">يتطلب وجهًا واحدًا فقط</string>
     <string name="instruction_move_center">تحرك إلى المركز</string>
