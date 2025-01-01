@@ -3,6 +3,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Typeface
@@ -15,6 +16,7 @@ import android.view.SurfaceView
 import kotlin.math.sqrt
 import kotlin.math.max
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -62,8 +64,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import com.luminsoft.ocr.R
+import com.luminsoft.ocr.core.models.OCRSuccessModel
+import com.luminsoft.ocr.core.sdk.OcrSDK
+import com.luminsoft.ocr.natural_expression_detection.NaturalExpressionDetectionActivity
 import org.opencv.android.Utils
 import org.opencv.core.MatOfDouble
 import org.opencv.core.MatOfFloat
@@ -114,16 +120,18 @@ class NationalIdDetection : ComponentActivity(), CameraBridgeViewBase.CvCameraVi
                 ) {
                     if (OpenCVLoader.initDebug()) {
                         Log.d("OpenCV", "OpenCV loaded")
+
+
+
                         CameraPreviewWithCapturedImageView(
                             cameraViewListener = this@NationalIdDetection,
                             capturedImagePath = _capturedImagePath.value
                         )
                         Log.d("OpenCV", "OpenCV finished loading")
                     } else {
-                        Greeting(
-                            "Failed to load OpenCV",
-                            modifier = Modifier.padding(innerPadding)
-                        )
+
+                        Toast.makeText(this@NationalIdDetection, "Failed to load OpenCV", Toast.LENGTH_SHORT).show()
+
                     }
                 }
             }
@@ -539,29 +547,6 @@ class NationalIdDetection : ComponentActivity(), CameraBridgeViewBase.CvCameraVi
         return variance < BLUR_THRESHOLD
     }
 
-    // Helper to display text message
- /*   private fun displayCenteredText(mat: Mat, text: String, isBlurry: Boolean = false) {
-        println("radwan $text")
-        val font = Imgproc.FONT_HERSHEY_SIMPLEX
-        val textSize = 1.0
-        val textColor = Scalar(255.0, 255.0, 255.0)
-
-        val textThickness = 2
-
-        val textSizeEstimate = Imgproc.getTextSize(text, font, textSize, textThickness, null)
-        val textX = (mat.cols() - textSizeEstimate.width) / 2
-        val textY = (mat.rows() + textSizeEstimate.height) / 2
-
-        Imgproc.putText(
-            mat,
-            text,
-            Point(textX, textY),
-            font,
-            textSize,
-            textColor,
-            textThickness
-        )
-    }*/
     private fun displayCenteredText(mat: Mat, text: String, isBlurry: Boolean = false) {
         // Create a bitmap with the same size as the Mat
         val bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888)
@@ -571,7 +556,7 @@ class NationalIdDetection : ComponentActivity(), CameraBridgeViewBase.CvCameraVi
 
         val paint = Paint().apply {
             isAntiAlias = true
-            textSize = 48f // Adjust as needed
+            textSize = 32f // Adjust as needed
             color = android.graphics.Color.WHITE
             textAlign = Paint.Align.CENTER
             typeface = Typeface.create("sans-serif", Typeface.NORMAL) // Ensure font supports Arabic
@@ -591,7 +576,6 @@ class NationalIdDetection : ComponentActivity(), CameraBridgeViewBase.CvCameraVi
         Utils.bitmapToMat(bitmap, mat)
     }
 
-
 }
 
 
@@ -600,17 +584,11 @@ fun CameraPreviewWithCapturedImageView(
     cameraViewListener: CameraBridgeViewBase.CvCameraViewListener2,
     capturedImagePath: String?
 ) {
-    // Change the background color to black if an image is captured
-    val backgroundColor = if (capturedImagePath != null) {
-        androidx.compose.ui.graphics.Color.Black
-    } else {
-        androidx.compose.ui.graphics.Color.Transparent
-    }
-
+    val context = LocalContext.current
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor) // Set dynamic background color
+            .background(androidx.compose.ui.graphics.Color.Transparent)
     ) {
         if (capturedImagePath == null) {
             AndroidView(
@@ -655,20 +633,54 @@ fun CameraPreviewWithCapturedImageView(
                 modifier = Modifier.fillMaxSize()
             )
         } else {
-            // Display Captured Image
-            val painter = rememberImagePainter(File(capturedImagePath))
-            Image(
-                painter = painter,
-                contentDescription = "Captured Image",
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .fillMaxWidth()
-                    .height(300.dp),
-                contentScale = ContentScale.Fit
+            val scaledBitmap = decodeSampledBitmapFromFile(capturedImagePath, 800, 600)
+            val bitmap = BitmapFactory.decodeFile(capturedImagePath)
+
+            OcrSDK.ocrCallback?.success(
+                OCRSuccessModel(
+                    nationalIdImage = bitmap,
+                    ocrMessage = context.getString(R.string.captured_successfully),
+                )
             )
+
+            (context as NationalIdDetection).finish()
+
         }
     }
 }
+
+fun decodeSampledBitmapFromFile(path: String, reqWidth: Int, reqHeight: Int): Bitmap? {
+    val options = BitmapFactory.Options().apply {
+        inJustDecodeBounds = true
+    }
+
+    BitmapFactory.decodeFile(path, options)
+
+    // Calculate the sample size
+    options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight)
+    options.inJustDecodeBounds = false
+
+    return BitmapFactory.decodeFile(path, options)
+}
+
+fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+    val height = options.outHeight
+    val width = options.outWidth
+    var inSampleSize = 1
+
+    if (height > reqHeight || width > reqWidth) {
+        val halfHeight = height / 2
+        val halfWidth = width / 2
+
+        while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+            inSampleSize *= 2
+        }
+    }
+
+    return inSampleSize
+}
+
+
 
 // Function to get the highest available resolution for the camera
 fun getHighestResolution(context: Context, cameraIndex: Int): Pair<Int, Int> {

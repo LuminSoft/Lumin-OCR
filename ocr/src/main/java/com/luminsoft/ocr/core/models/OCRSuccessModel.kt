@@ -6,6 +6,5 @@ data class OCRSuccessModel(
     val ocrMessage: String,
     val naturalExpressionImage: Bitmap? = null,
     val livenessSmileExpressionImage: Bitmap? = null,
-    val frontNationalIdImage: Bitmap? = null,
-    val backNationalIdImage: Bitmap? = null,
+    val nationalIdImage: Bitmap? = null,
 )
