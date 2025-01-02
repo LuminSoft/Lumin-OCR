@@ -3,6 +3,7 @@ package com.luminsoft.ocrandroid
 import android.app.Activity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -171,6 +172,7 @@ class MainActivity : ComponentActivity() {
         try {
             OCR.launch(activity)
         } catch (e: Exception) {
+            Toast.makeText(this, e.message.toString(), Toast.LENGTH_SHORT).show()
             Log.e("error", e.toString())
         }
     }

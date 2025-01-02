@@ -17,6 +17,40 @@ object LicenseVerifier {
         return valid
     }
 
+    private fun loadJsonFromRaw(context: Context, rawResourceId: Int): String {
+        return context.resources.openRawResource(rawResourceId).bufferedReader().use { it.readText() }
+    }
+
+    fun isFaceEnabled(context: Context, rawResourceId: Int): Boolean {
+        return try {
+            val jsonString = loadJsonFromRaw(context, rawResourceId)
+            val jsonObject = JSONObject(jsonString)
+            jsonObject.getJSONObject("contract")
+                .getJSONObject("eNROLL")
+                .getJSONObject("mobile")
+                .getJSONObject("face")
+                .getBoolean("enabled")
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+
+    fun isDocumentEnabled(context: Context, rawResourceId: Int): Boolean {
+        return try {
+            val jsonString = loadJsonFromRaw(context, rawResourceId)
+            val jsonObject = JSONObject(jsonString)
+            jsonObject.getJSONObject("contract")
+                .getJSONObject("eNROLL")
+                .getJSONObject("mobile")
+                .getJSONObject("document")
+                .getBoolean("enabled")
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+
     private fun verifyLicense(licenseData: String): Boolean {
         val contractModel = parseJsonToModel(licenseData)
         if (!checkExpiry(contractModel.contract.expiration)) {
