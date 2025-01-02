@@ -34,7 +34,7 @@ object OCR {
 
         Log.d("LaunchOCR", "OCR Launched Successfully")
         setLocale(OcrSDK.localizationCode, activity)
-        readRawFile(context = activity, rawResourceId = OcrSDK.licenseResource)
+        val validLicense = readRawFile(context = activity, rawResourceId = OcrSDK.licenseResource)
     }
 
     private fun setLocale(lang: LocalizationCode, activity: Activity) {

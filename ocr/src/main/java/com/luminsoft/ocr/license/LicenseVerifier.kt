@@ -10,10 +10,11 @@ import java.util.TimeZone
 
 object LicenseVerifier {
 
-    fun readRawFile(context: Context, rawResourceId: Int) {
+    fun readRawFile(context: Context, rawResourceId: Int): Boolean {
         val inputStream = context.resources.openRawResource(rawResourceId)
         val valid = verifyLicense(inputStream.bufferedReader().use { it.readText() })
         Log.e("verifyLicense", valid.toString())
+        return valid
     }
 
     private fun verifyLicense(licenseData: String): Boolean {
