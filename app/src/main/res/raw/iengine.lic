@@ -1,0 +1,22 @@
+{
+   "contract":{
+      "customer":"Excel_Evaluation",
+      "expiration":{
+         "day":22,
+         "month":11,
+         "year":2024
+      },
+      "id":"com.luminsoft.ocrandroid",
+      "eNROLL":{
+         "mobile":{
+            "face":{
+               "enabled":true
+            },
+            "document":{
+               "enabled":true
+            }
+         }
+      }
+   },
+   "contractSignature":"edbe2db260793977caeb2a6bd741f04f7dde3b00d15bc9d00d658dd2d03e1bcb152ccd1b623a1c99f9c84f67319129ab5dc8377ee82a99a892564479a8bda4ce"
+}

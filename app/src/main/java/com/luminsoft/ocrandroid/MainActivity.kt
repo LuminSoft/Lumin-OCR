@@ -83,6 +83,7 @@ class MainActivity : ComponentActivity() {
                     }
                 },
                 localizationCode = LocalizationCode.EN,
+                licenseResource = R.raw.iengine,
             )
         } catch (e: Exception) {
             Log.e("error", e.toString())
