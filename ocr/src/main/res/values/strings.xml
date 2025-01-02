@@ -1,0 +1,21 @@
+
+<resources>
+    <string name="message_more_light">More light needed</string>
+    <string name="message_avoid_reflection">Avoid reflection</string>
+    <string name="message_hold_still_stabilize">Hold Still - Stabilize Camera</string>
+    <string name="message_hold_still">Good, Hold still</string>
+    <string name="message_center_document">Center Document</string>
+    <string name="instruction_smile_now">Now, please smile!</string>
+
+
+    <string name="captured_successfully">Image picked successfully</string>
+
+    <string name="instruction_no_face">No face detected</string>
+    <string name="instruction_one_face">Only one face required</string>
+    <string name="instruction_move_center">Move Center</string>
+    <string name="instruction_keep_natural">Keep a natural expression</string>
+    <string name="instruction_please_keep_natural_expression">Please keep a natural expression</string>
+    <string name="instruction_look_straight">Look straight</string>
+    <string name="instruction_move_closer">Move Closer</string>
+    <string name="instruction_move_back">Move Back</string>
+</resources>

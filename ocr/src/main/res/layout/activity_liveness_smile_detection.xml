@@ -1,0 +1,64 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    tools:context=".liveness_smile_detection.LivenessSmileDetectionActivity">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/viewCameraPreview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:scaleType="fillCenter" />
+
+    <com.luminsoft.ocr.core.graphic.GraphicOverlay
+        android:id="@+id/viewGraphicOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <com.luminsoft.ocr.core.graphic.CircularOverlayView
+        android:id="@+id/circularOverlayView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- TextView for Instructions at the Top -->
+    <TextView
+        android:id="@+id/textInstructions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:padding="16dp"
+        android:text="@string/instruction_move_center"
+        android:textSize="20sp"
+        android:textColor="@android:color/white"
+        android:gravity="center"
+        android:background="@android:color/transparent" />
+
+    <!-- LinearLayout to arrange captured images in upper and lower halves -->
+    <LinearLayout
+        android:id="@+id/capturedImagesLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <!-- ImageView for natural expression (upper half) -->
+        <ImageView
+            android:id="@+id/imageCapturedNatural"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:scaleType="centerCrop"
+            android:padding="8dp"/>
+
+        <!-- ImageView for smiling expression (lower half) -->
+        <ImageView
+            android:id="@+id/imageCapturedSmiling"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:scaleType="centerCrop"
+            android:padding="8dp"/>
+    </LinearLayout>
+</FrameLayout>

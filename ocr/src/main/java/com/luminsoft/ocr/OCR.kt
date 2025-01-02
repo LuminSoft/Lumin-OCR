@@ -7,7 +7,11 @@ import android.util.Log
 import com.luminsoft.ocr.core.models.LocalizationCode
 import com.luminsoft.ocr.core.models.OCRCallback
 import com.luminsoft.ocr.core.models.OCREnvironment
+import com.luminsoft.ocr.core.models.OCRMode
 import com.luminsoft.ocr.core.sdk.OcrSDK
+import com.luminsoft.ocr.liveness_smile_detection.LivenessSmileDetectionActivity
+import com.luminsoft.ocr.national_id_detection.NationalIdDetection
+import com.luminsoft.ocr.natural_expression_detection.NaturalExpressionDetectionActivity
 import com.luminsoft.ocr.license.LicenseVerifier.readRawFile
 import java.util.Locale
 
@@ -17,6 +21,7 @@ object OCR {
         environment: OCREnvironment = OCREnvironment.STAGING,
         localizationCode: LocalizationCode = LocalizationCode.EN,
         ocrCallback: OCRCallback? = null,
+        ocrMode: OCRMode = OCRMode.SMILE_LIVENESS,
         licenseResource: Int = 0
     ) {
 
@@ -24,37 +29,56 @@ object OCR {
         OcrSDK.localizationCode = localizationCode
         OcrSDK.ocrCallback = ocrCallback
         OcrSDK.licenseResource = licenseResource
+        OcrSDK.ocrMode = ocrMode
     }
 
     fun launch(
         activity: Activity,
     ) {
+        Log.d("LaunchOCR", "OCR Launched Successfully for ${getModeActivity(OcrSDK.ocrMode)}")
 
         OcrSDK.packageId = activity.packageName
 
         Log.d("LaunchOCR", "OCR Launched Successfully")
         setLocale(OcrSDK.localizationCode, activity)
+        val targetActivity = getModeActivity(OcrSDK.ocrMode)
+        val intent = Intent(activity, targetActivity)
+        Log.d("LaunchOCR", "Intent created for: ${targetActivity.name}")
+        try {
+            activity.startActivity(intent)
+            Log.d("LaunchOCR", "startActivity called successfully")
+        } catch (e: Exception) {
+            Log.e("LaunchOCR", "Error starting activity: ${e.message}", e)
+        }
+    }
+
+
+    private fun getModeActivity(ocrMode: OCRMode): Class<out Activity> {
+        return when (ocrMode) {
+            OCRMode.SMILE_LIVENESS -> LivenessSmileDetectionActivity::class.java
+            OCRMode.NaturalExpressionDetection -> NaturalExpressionDetectionActivity::class.java
+            OCRMode.PASSPORT_DETECTION -> NaturalExpressionDetectionActivity::class.java
+            OCRMode.NATIONAL_ID_DETECTION -> NationalIdDetection::class.java
+        }
         val validLicense = readRawFile(context = activity, rawResourceId = OcrSDK.licenseResource)
     }
 
     private fun setLocale(lang: LocalizationCode, activity: Activity) {
-        val locale = if (lang != LocalizationCode.AR) {
+        val locale = if (lang.name.lowercase() != LocalizationCode.AR.name.lowercase()) {
             Locale("en")
         } else {
             Locale("ar")
         }
-        Locale.setDefault(locale)
 
-        val config = Configuration(activity.resources.configuration)
+        val config: Configuration = activity.baseContext.resources.configuration
         config.setLocale(locale)
 
-        activity.createConfigurationContext(config)
-
-        // Apply for app-wide locale change if needed
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-            activity.applicationContext.createConfigurationContext(config)
-        }
+        activity.baseContext.resources.updateConfiguration(
+            config,
+            activity.baseContext.resources.displayMetrics
+        )
     }
+
 
 
 }
