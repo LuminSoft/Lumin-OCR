@@ -28,8 +28,6 @@ object OCR {
         OcrSDK.localizationCode = localizationCode
         OcrSDK.ocrCallback = ocrCallback
         OcrSDK.ocrMode = ocrMode
-
-
     }
 
     fun launch(

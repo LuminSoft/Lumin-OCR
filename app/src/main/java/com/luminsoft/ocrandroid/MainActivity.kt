@@ -25,13 +25,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.luminsoft.ocr.LocalizationCode
 import com.luminsoft.ocr.OCR
-import com.luminsoft.ocr.core.models.LocalizationCode
 import com.luminsoft.ocr.core.models.OCRCallback
 import com.luminsoft.ocr.core.models.OCREnvironment
 import com.luminsoft.ocr.core.models.OCRFailedModel
 import com.luminsoft.ocr.core.models.OCRMode
 import com.luminsoft.ocr.core.models.OCRSuccessModel
+
 
 import com.luminsoft.ocrandroid.ui.theme.OCRAndroidTheme
 
