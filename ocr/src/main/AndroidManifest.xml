@@ -14,6 +14,10 @@
             android:name=".natural_expression_detection.NaturalExpressionDetectionActivity"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
+       <activity
+            android:name=".passport_detection.PassportDetectionActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
 
         <activity
             android:name=".national_id_detection.NationalIdDetection"
