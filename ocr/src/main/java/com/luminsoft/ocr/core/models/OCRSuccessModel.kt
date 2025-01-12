@@ -7,4 +7,5 @@ data class OCRSuccessModel(
     val naturalExpressionImage: Bitmap? = null,
     val livenessSmileExpressionImage: Bitmap? = null,
     val nationalIdImage: Bitmap? = null,
+    val passportImage: Bitmap? = null,
 )

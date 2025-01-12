@@ -3,7 +3,6 @@ package com.luminsoft.ocr
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
-import android.os.Build
 import android.util.Log
 import com.luminsoft.ocr.core.models.LocalizationCode
 import com.luminsoft.ocr.core.models.OCRCallback
@@ -12,10 +11,11 @@ import com.luminsoft.ocr.core.models.OCRMode
 import com.luminsoft.ocr.core.sdk.OcrSDK
 import com.luminsoft.ocr.license.LicenseVerifier.isDocumentEnabled
 import com.luminsoft.ocr.license.LicenseVerifier.isFaceEnabled
+import com.luminsoft.ocr.license.LicenseVerifier.readRawFile
 import com.luminsoft.ocr.liveness_smile_detection.LivenessSmileDetectionActivity
 import com.luminsoft.ocr.national_id_detection.NationalIdDetection
 import com.luminsoft.ocr.natural_expression_detection.NaturalExpressionDetectionActivity
-import com.luminsoft.ocr.license.LicenseVerifier.readRawFile
+import com.luminsoft.ocr.passport_detection.PassportDetectionActivity
 import java.util.Locale
 
 object OCR {
@@ -51,7 +51,7 @@ object OCR {
         var launch = false
 
         when (OcrSDK.ocrMode) {
-            OCRMode.NATIONAL_ID_DETECTION -> {
+            OCRMode.NATIONAL_ID_DETECTION ,OCRMode.PASSPORT_DETECTION-> {
                 launch = isDocumentEnabled(context = activity, rawResourceId = OcrSDK.licenseResource)
                 if (!launch) {
                     throw Exception( "Document detection is not enabled in the license.")
@@ -64,8 +64,6 @@ object OCR {
                     throw Exception( "Face detection is not enabled in the license.")
                 }
             }
-
-            OCRMode.PASSPORT_DETECTION -> TODO()
         }
 
         if (launch) {
@@ -88,7 +86,7 @@ object OCR {
         return when (ocrMode) {
             OCRMode.SMILE_LIVENESS -> LivenessSmileDetectionActivity::class.java
             OCRMode.NaturalExpressionDetection -> NaturalExpressionDetectionActivity::class.java
-            OCRMode.PASSPORT_DETECTION -> NaturalExpressionDetectionActivity::class.java
+            OCRMode.PASSPORT_DETECTION -> PassportDetectionActivity::class.java
             OCRMode.NATIONAL_ID_DETECTION -> NationalIdDetection::class.java
         }
     }

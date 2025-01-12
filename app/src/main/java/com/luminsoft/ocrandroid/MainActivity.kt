@@ -1,5 +1,6 @@
 package com.luminsoft.ocrandroid
 
+
 import android.app.Activity
 import android.os.Bundle
 import android.util.Log
@@ -33,8 +34,6 @@ import com.luminsoft.ocr.core.models.OCREnvironment
 import com.luminsoft.ocr.core.models.OCRFailedModel
 import com.luminsoft.ocr.core.models.OCRMode
 import com.luminsoft.ocr.core.models.OCRSuccessModel
-
-
 import com.luminsoft.ocrandroid.ui.theme.OCRAndroidTheme
 
 
@@ -62,6 +61,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             val activity = LocalContext.current as Activity
 
@@ -84,6 +84,22 @@ class MainActivity : ComponentActivity() {
                     ) {
                         Text(
                             text = "National ID Detection",
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        modifier = Modifier.width(260.dp),
+                        onClick = {
+                            initOCR(activity, OCRMode.PASSPORT_DETECTION)
+                        },
+                        contentPadding = PaddingValues(0.dp),
+                        shape = RoundedCornerShape(12.dp),
+                    ) {
+                        Text(
+                            text = "Passport Detection",
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }
