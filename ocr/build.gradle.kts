@@ -84,21 +84,36 @@ publishing {
             groupId = "com.luminsoft"
             artifactId = "ocr"
             version = "1.0.0"
-            androidComponents {
-                onVariants(selector().withBuildType("release")) { variant ->
-                    artifact(variant.artifacts.get(com.android.build.api.artifact.SingleArtifact.AAR))
-                }
-            }
+            artifact("$buildDir/outputs/aar/ocr-release.aar")
+
+            /*       androidComponents {
+                       onVariants(selector().withBuildType("release")) { variant ->
+                           artifact(variant.artifacts.get(com.android.build.api.artifact.SingleArtifact.AAR))
+                       }
+                   }*/
         }
     }
     repositories {
         maven {
-            url =
-                uri("git:releases://git@bitbucket.org:ExcelSystemsEgypt/lumin-ocr-sdk-android.git")
-            credentials {
-                username = providers.gradleProperty("bitbucketUser").getOrElse("")
-                password = providers.gradleProperty("bitbucketPassword").getOrElse("")
-            }
+            name = "LocalMaven"
+            url = uri("${rootProject.buildDir}/maven-repo") // local folder
         }
+/*        maven {
+            name = "Lumin-OCR-SDK-Android"
+            url =
+                uri("https://Andrew_Samir7@bitbucket.org/ExcelSystemsEgypt/lumin-ocr-sdk-android.git")
+            credentials {
+                username = "Andrew_Samir7"
+                password = "ATBBPFQH6k96W6PmpSwHpK7HfFMf249C1E5D"
+            }
+        }*/
+        /*        maven {
+                    url =
+                        uri("git:releases://git@bitbucket.org:ExcelSystemsEgypt/lumin-ocr-sdk-android.git")
+                    credentials {
+                        username ="ExcelSystemsEgypt" *//*providers.gradleProperty("bitbucketUser").getOrElse("")*//*
+                password = "ATBBPFQH6k96W6PmpSwHpK7HfFMf249C1E5D"*//*providers.gradleProperty("bitbucketPassword").getOrElse("")*//*
+            }
+        }*/
     }
 }

@@ -167,6 +167,10 @@ android {
             path (project.projectDir.toString() + '/libcxx_helper/CMakeLists.txt')
         }
     }
+
+    lint {
+        baseline = file("lint-baseline.xml")
+    }
 }
 
 publishing {
@@ -190,4 +194,5 @@ publishing {
 }
 
 dependencies {
+implementation libs.androidx.core
 }
