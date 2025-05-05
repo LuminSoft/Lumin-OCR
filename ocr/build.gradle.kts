@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.maven.publish)
 }
 
 android {
@@ -9,7 +10,6 @@ android {
 
     defaultConfig {
         minSdk = 24
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -59,15 +59,8 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-
-    // Face Detection
     implementation(libs.face.detection)
-
-    // Scan Document
     implementation(libs.mlkit.document.scanner)
-
-
-    // CameraX
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
@@ -75,22 +68,52 @@ dependencies {
     implementation(libs.androidx.camera.view)
     implementation(libs.androidx.camera.mlkit.vision)
     implementation(libs.androidx.camera.extensions)
-
-// CameraSource
     implementation(libs.play.services.vision.common)
-
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    implementation ("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0-beta1")
-
-
-
+    implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0-beta1")
     implementation(libs.coil.compose)
-
     implementation(libs.androidx.camera.core.v110)
     implementation(libs.androidx.camera.camera2.v110)
     implementation(libs.androidx.camera.lifecycle.v110)
     implementation(libs.androidx.camera.view.v110)
     implementation(libs.androidx.camera.extensions.v110)
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            groupId = "com.luminsoft"
+            artifactId = "ocr"
+            version = "1.0.0"
+            artifact("$buildDir/outputs/aar/ocr-release.aar")
+
+            /*       androidComponents {
+                       onVariants(selector().withBuildType("release")) { variant ->
+                           artifact(variant.artifacts.get(com.android.build.api.artifact.SingleArtifact.AAR))
+                       }
+                   }*/
+        }
+    }
+    repositories {
+        maven {
+            name = "LocalMaven"
+            url = uri("${rootProject.buildDir}/maven-repo") // local folder
+        }
+/*        maven {
+            name = "Lumin-OCR-SDK-Android"
+            url =
+                uri("https://Andrew_Samir7@bitbucket.org/ExcelSystemsEgypt/lumin-ocr-sdk-android.git")
+            credentials {
+                username = "Andrew_Samir7"
+                password = "ATBBPFQH6k96W6PmpSwHpK7HfFMf249C1E5D"
+            }
+        }*/
+        /*        maven {
+                    url =
+                        uri("git:releases://git@bitbucket.org:ExcelSystemsEgypt/lumin-ocr-sdk-android.git")
+                    credentials {
+                        username ="ExcelSystemsEgypt" *//*providers.gradleProperty("bitbucketUser").getOrElse("")*//*
+                password = "ATBBPFQH6k96W6PmpSwHpK7HfFMf249C1E5D"*//*providers.gradleProperty("bitbucketPassword").getOrElse("")*//*
+            }
+        }*/
+    }
 }

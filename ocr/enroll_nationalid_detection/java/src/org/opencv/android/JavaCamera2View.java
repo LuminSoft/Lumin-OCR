@@ -6,6 +6,7 @@ import java.util.List;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -22,6 +23,8 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Surface;
 import android.view.ViewGroup.LayoutParams;
+
+import androidx.core.content.ContextCompat;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -339,7 +342,12 @@ public class JavaCamera2View extends CameraBridgeViewBase {
             }
 
             Log.i(LOGTAG, "Opening camera: " + mCameraID);
+            if (ContextCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             manager.openCamera(mCameraID, mStateCallback, mBackgroundHandler);
+            } else {
+                Log.e("JavaCamera2View", "Camera permission not granted");
+                // Optionally, notify the app or fail gracefully
+            }
         } catch (CameraAccessException e) {
             Log.e(LOGTAG, "OpenCamera - Camera Access Exception", e);
         } catch (RuntimeException e) {
