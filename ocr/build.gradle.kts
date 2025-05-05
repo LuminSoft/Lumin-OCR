@@ -78,42 +78,28 @@ dependencies {
     implementation(libs.androidx.camera.extensions.v110)
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("release") {
-            groupId = "com.luminsoft"
-            artifactId = "ocr"
-            version = "1.0.0"
-            artifact("$buildDir/outputs/aar/ocr-release.aar")
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                groupId = "com.luminsoft"
+                artifactId = "ocr"
+                version = "1.0.0"
+                from(components["release"]) // Includes the AAR and other release components
 
-            /*       androidComponents {
-                       onVariants(selector().withBuildType("release")) { variant ->
-                           artifact(variant.artifacts.get(com.android.build.api.artifact.SingleArtifact.AAR))
-                       }
-                   }*/
-        }
-    }
-    repositories {
-        maven {
-            name = "LocalMaven"
-            url = uri("${rootProject.buildDir}/maven-repo") // local folder
-        }
-/*        maven {
-            name = "Lumin-OCR-SDK-Android"
-            url =
-                uri("https://Andrew_Samir7@bitbucket.org/ExcelSystemsEgypt/lumin-ocr-sdk-android.git")
-            credentials {
-                username = "Andrew_Samir7"
-                password = "ATBBPFQH6k96W6PmpSwHpK7HfFMf249C1E5D"
+                pom {
+                    name.set("OCR SDK")
+                    description.set("OCR Android SDK for LuminSoft")
+                }
             }
-        }*/
-        /*        maven {
-                    url =
-                        uri("git:releases://git@bitbucket.org:ExcelSystemsEgypt/lumin-ocr-sdk-android.git")
-                    credentials {
-                        username ="ExcelSystemsEgypt" *//*providers.gradleProperty("bitbucketUser").getOrElse("")*//*
-                password = "ATBBPFQH6k96W6PmpSwHpK7HfFMf249C1E5D"*//*providers.gradleProperty("bitbucketPassword").getOrElse("")*//*
+        }
+
+        repositories {
+            maven {
+                name = "LocalMaven"
+                url = uri(layout.buildDirectory.dir("maven-repo"))
             }
-        }*/
+        }
     }
 }
+
