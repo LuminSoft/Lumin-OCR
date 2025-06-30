@@ -7,6 +7,7 @@ cameraLifecycle = "1.1.0"
 cameraView = "1.1.0"
 cameraExtensions = "1.1.0"
 coilCompose = "2.2.0"
+coilComposeVersion = "2.3.0"
 faceDetection = "16.1.5"
 firebaseBom = "33.5.1"
 kotlin = "1.9.20"
@@ -39,6 +40,7 @@ androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "
 androidx-camera-view-v110 = { module = "androidx.camera:camera-view", version.ref = "cameraView" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+coil-compose-v230 = { module = "io.coil-kt:coil-compose", version.ref = "coilComposeVersion" }
 face-detection = { module = "com.google.mlkit:face-detection", version.ref = "faceDetection" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

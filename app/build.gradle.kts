@@ -70,7 +70,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation ("io.coil-kt:coil-compose:2.2.0")
+    implementation (libs.coil.compose.v230)
     implementation(project(":ocr"))
     implementation(project(":ocr:enroll_nationalid_detection"))
 }
