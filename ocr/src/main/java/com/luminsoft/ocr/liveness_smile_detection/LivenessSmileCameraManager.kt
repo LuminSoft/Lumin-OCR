@@ -1,11 +1,16 @@
 package com.luminsoft.ocr.liveness_smile_detection
 
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.media.ExifInterface
+import androidx.exifinterface.media.ExifInterface
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import android.util.Log
+import android.view.Surface
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -13,6 +18,14 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.video.FallbackStrategy
+import androidx.camera.video.MediaStoreOutputOptions
+import androidx.camera.video.Quality
+import androidx.camera.video.QualitySelector
+import androidx.camera.video.Recorder
+import androidx.camera.video.Recording
+import androidx.camera.video.VideoCapture
+import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
@@ -22,11 +35,9 @@ import com.luminsoft.ocr.core.graphic.GraphicOverlay
 import com.luminsoft.ocr.core.models.OCRFailedModel
 import com.luminsoft.ocr.core.models.OCRSuccessModel
 import com.luminsoft.ocr.core.sdk.OcrSDK
-import com.luminsoft.ocr.natural_expression_detection.NaturalExpressionDetectionActivity
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-
 
 class LivenessSmileCameraManager(
     private val context: Context,
@@ -49,21 +60,30 @@ class LivenessSmileCameraManager(
     private var naturalExpressionImage: Bitmap? = null
     private var smilingImage: Bitmap? = null
 
+    private var videoCapture: VideoCapture<Recorder>? = null
+    private var currentRecording: Recording? = null
+    private var lastSavedVideoUri: Uri? = null
+
     fun cameraStart() {
         val cameraProcessProvider = ProcessCameraProvider.getInstance(context)
+
 
         cameraProcessProvider.addListener(
             {
                 cameraProvider = cameraProcessProvider.get()
-                preview = Preview.Builder().build()
+                preview = Preview.Builder()
+                    .setTargetRotation(Surface.ROTATION_0)
+                    .build()
 
                 // Initialize ImageCapture
                 imageCapture = ImageCapture.Builder()
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                    .setTargetRotation(Surface.ROTATION_0)
                     .build()
 
                 imageAnalysis = ImageAnalysis.Builder()
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .setTargetRotation(Surface.ROTATION_0)
                     .build()
                     .also {
                         it.setAnalyzer(
@@ -72,8 +92,10 @@ class LivenessSmileCameraManager(
                                 context,
                                 graphicOverlay,
                                 circularOverlayView,
-                                ::captureImage, // Pass captureImage function to capture based on expression type
-                                (context as LivenessSmileDetectionActivity)::updateInstructions
+                                ::captureImage,
+                                (context as LivenessSmileDetectionActivity)::updateInstructions,
+                                { startRecording() },
+                                { stopRecording() }
                             )
                         )
                     }
@@ -83,9 +105,11 @@ class LivenessSmileCameraManager(
                     .build()
 
                 setCameraConfig(cameraProvider, cameraSelector)
+                startRecording()
             },
             ContextCompat.getMainExecutor(context)
         )
+        startRecording()
     }
 
     private fun setCameraConfig(
@@ -94,12 +118,25 @@ class LivenessSmileCameraManager(
     ) {
         try {
             cameraProvider.unbindAll()
+
+            val recorder = Recorder.Builder()
+                .setQualitySelector(
+                    QualitySelector.from(
+                        Quality.SD,
+                        FallbackStrategy.higherQualityOrLowerThan(Quality.LOWEST)
+                    )
+                )
+                .build()
+
+            videoCapture = VideoCapture.withOutput(recorder)
+
             camera = cameraProvider.bindToLifecycle(
                 lifecycleOwner,
                 cameraSelector,
                 preview,
                 imageCapture,
-                imageAnalysis
+                imageAnalysis,
+                videoCapture
             )
             preview.setSurfaceProvider(previewView.surfaceProvider)
         } catch (e: Exception) {
@@ -107,7 +144,6 @@ class LivenessSmileCameraManager(
         }
     }
 
-    // Updated captureImage function to handle two images based on isSmiling flag
     private fun captureImage(isSmiling: Boolean) {
         if (!this::imageCapture.isInitialized || isCallbackExecuted && smilingImage != null) return
 
@@ -126,18 +162,15 @@ class LivenessSmileCameraManager(
                     isCallbackExecuted = true
                     Log.i(TAG, "Image captured: ${photoFile.absolutePath}")
 
-                    // Decode the saved image into a Bitmap
                     val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
                     val correctedBitmap = adjustBitmapIfNeeded(photoFile.absolutePath, bitmap)
 
-                    // Store the image based on the expression type
                     if (isSmiling) {
                         smilingImage = correctedBitmap
                     } else {
                         naturalExpressionImage = correctedBitmap
                     }
 
-                    // If both images are captured, call the callback to display them
                     if (naturalExpressionImage != null && smilingImage != null) {
                         OcrSDK.ocrCallback?.success(
                             OCRSuccessModel(
@@ -153,12 +186,10 @@ class LivenessSmileCameraManager(
                                 finish()
                             }
                         }
-
                     }
                 }
 
                 override fun onError(exception: ImageCaptureException) {
-
                     if (isCallbackExecuted) return
                     isCallbackExecuted = true
 
@@ -208,7 +239,53 @@ class LivenessSmileCameraManager(
     }
 
     fun cameraStop() {
+        currentRecording?.stop() // Ensure recording stops on camera stop
+        currentRecording = null
         cameraProvider.unbindAll()
+    }
+
+    private fun startRecording() {
+        Log.d("startRecording", "startRecording")
+        val vc = videoCapture ?: return
+
+        if (currentRecording != null) {
+            Log.w(TAG, "Recording already in progress, stopping previous recording")
+            currentRecording?.stop()
+            currentRecording = null
+        }
+
+        val name = "liveness_${System.currentTimeMillis()}.mp4"
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+            put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/LuminOCR")
+            }
+        }
+
+        val outputOptions = MediaStoreOutputOptions.Builder(
+            context.contentResolver,
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+        ).setContentValues(contentValues).build()
+
+        val recording = vc.output.prepareRecording(context, outputOptions)
+        currentRecording = recording.start(ContextCompat.getMainExecutor(context)) { event ->
+            when (event) {
+                is VideoRecordEvent.Finalize -> {
+                    if (event.hasError()) {
+                        Log.e(TAG, "Video finalize error: ${event.error}")
+                    } else {
+                        lastSavedVideoUri = event.outputResults.outputUri
+                        Log.i(TAG, "Video saved: $lastSavedVideoUri")
+                    }
+                }
+            }
+        }
+    }
+
+    private fun stopRecording() {
+        currentRecording?.stop()
+        currentRecording = null
     }
 
     companion object {
@@ -216,6 +293,3 @@ class LivenessSmileCameraManager(
         var cameraOption: Int = CameraSelector.LENS_FACING_FRONT
     }
 }
-
-
-
