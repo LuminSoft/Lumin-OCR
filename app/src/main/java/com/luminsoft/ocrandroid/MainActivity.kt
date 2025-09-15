@@ -170,7 +170,10 @@ class MainActivity : ComponentActivity() {
                     override fun success(ocrSuccessModel: OCRSuccessModel) {
                         Log.d("OCRCallback", "Nature image :${ocrSuccessModel.naturalExpressionImage}")
                         Log.d("OCRCallback", "Smile image :${ocrSuccessModel.livenessSmileExpressionImage}")
-                        Log.d("OCRCallback", "National Id image :${ocrSuccessModel.nationalIdImage}")
+                        val d = Log.d(
+                            "OCRCallback",
+                            "National Id image :${ocrSuccessModel.nationalIdImage}"
+                        )
 
                         text.value = "OCR Message: ${ocrSuccessModel.ocrMessage}"
 

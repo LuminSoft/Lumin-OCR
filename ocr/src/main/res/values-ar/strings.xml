@@ -6,6 +6,7 @@
     <string name="message_hold_still">ابق ثابتًا</string>
     <string name="message_center_document">ضع المستند في المركز</string>
     <string name="instruction_smile_now">الآن، من فضلك ابتسم!</string>
+    <string name="instruction_wink_now">الآن، من فضلك اغمز!</string>
 
     <string name="captured_successfully">تم التقاط الصورة بنجاح</string>
 

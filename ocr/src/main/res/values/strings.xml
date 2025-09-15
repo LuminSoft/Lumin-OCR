@@ -6,6 +6,7 @@
     <string name="message_hold_still">Good, Hold still</string>
     <string name="message_center_document">Center Document</string>
     <string name="instruction_smile_now">Now, please smile!</string>
+    <string name="instruction_wink_now">Now, please wink!</string>
 
 
     <string name="captured_successfully">Image picked successfully</string>
