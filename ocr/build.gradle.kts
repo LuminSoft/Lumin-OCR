@@ -23,6 +23,13 @@ android {
             )
         }
     }
+
+    publishing {
+        singleVariant("release") {
+            // optional but nice if you want sources on JitPack
+            withSourcesJar()
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -83,42 +90,57 @@ dependencies {
     implementation("androidx.camera:camera-view:1.3.4")
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("release") {
-            groupId = "com.luminsoft"
-            artifactId = "ocr"
-            version = "1.0.1"
-            artifact("$buildDir/outputs/aar/ocr-release.aar")
 
-            /*       androidComponents {
-                       onVariants(selector().withBuildType("release")) { variant ->
-                           artifact(variant.artifacts.get(com.android.build.api.artifact.SingleArtifact.AAR))
-                       }
-                   }*/
-        }
-    }
-    repositories {
-        maven {
-            name = "LocalMaven"
-            url = uri("${rootProject.buildDir}/maven-repo") // local folder
-        }
-/*        maven {
-            name = "Lumin-OCR-SDK-Android"
-            url =
-                uri("https://Andrew_Samir7@bitbucket.org/ExcelSystemsEgypt/lumin-ocr-sdk-android.git")
-            credentials {
-                username = "Andrew_Samir7"
-                password = "ATBBPFQH6k96W6PmpSwHpK7HfFMf249C1E5D"
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+                groupId = "com.luminsoft"
+                artifactId = "ocr"
+                version = "1.0.2"
             }
-        }*/
-        /*        maven {
-                    url =
-                        uri("git:releases://git@bitbucket.org:ExcelSystemsEgypt/lumin-ocr-sdk-android.git")
-                    credentials {
-                        username ="ExcelSystemsEgypt" *//*providers.gradleProperty("bitbucketUser").getOrElse("")*//*
-                password = "ATBBPFQH6k96W6PmpSwHpK7HfFMf249C1E5D"*//*providers.gradleProperty("bitbucketPassword").getOrElse("")*//*
-            }
-        }*/
+        }
     }
 }
+
+
+//publishing {
+//    publications {
+//        create<MavenPublication>("release") {
+//            groupId = "com.luminsoft"
+//            artifactId = "ocr"
+//            version = "1.0.1"
+//            artifact("$buildDir/outputs/aar/ocr-release.aar")
+//
+//            /*       androidComponents {
+//                       onVariants(selector().withBuildType("release")) { variant ->
+//                           artifact(variant.artifacts.get(com.android.build.api.artifact.SingleArtifact.AAR))
+//                       }
+//                   }*/
+//        }
+//    }
+//    repositories {
+//        maven {
+//            name = "LocalMaven"
+//            url = uri("${rootProject.buildDir}/maven-repo") // local folder
+//        }
+///*        maven {
+//            name = "Lumin-OCR-SDK-Android"
+//            url =
+//                uri("https://Andrew_Samir7@bitbucket.org/ExcelSystemsEgypt/lumin-ocr-sdk-android.git")
+//            credentials {
+//                username = "Andrew_Samir7"
+//                password = "ATBBPFQH6k96W6PmpSwHpK7HfFMf249C1E5D"
+//            }
+//        }*/
+//        /*        maven {
+//                    url =
+//                        uri("git:releases://git@bitbucket.org:ExcelSystemsEgypt/lumin-ocr-sdk-android.git")
+//                    credentials {
+//                        username ="ExcelSystemsEgypt" *//*providers.gradleProperty("bitbucketUser").getOrElse("")*//*
+//                password = "ATBBPFQH6k96W6PmpSwHpK7HfFMf249C1E5D"*//*providers.gradleProperty("bitbucketPassword").getOrElse("")*//*
+//            }
+//        }*/
+//    }
+//}
