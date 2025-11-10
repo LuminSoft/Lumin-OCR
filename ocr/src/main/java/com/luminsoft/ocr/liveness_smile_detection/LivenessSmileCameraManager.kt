@@ -56,17 +56,20 @@ class LivenessSmileCameraManager(
 
     private var isCallbackExecuted = false
 
-    // Bitmaps to store the natural and smiling expression images
+    // images
     private var naturalExpressionImage: Bitmap? = null
     private var smilingImage: Bitmap? = null
 
+    // video
     private var videoCapture: VideoCapture<Recorder>? = null
     private var currentRecording: Recording? = null
     private var lastSavedVideoUri: Uri? = null
 
+    // NEW: flag to say “I have the photos, wait for video then send success”
+    private var pendingSuccessUntilVideo = false
+
     fun cameraStart() {
         val cameraProcessProvider = ProcessCameraProvider.getInstance(context)
-
 
         cameraProcessProvider.addListener(
             {
@@ -75,7 +78,6 @@ class LivenessSmileCameraManager(
                     .setTargetRotation(Surface.ROTATION_0)
                     .build()
 
-                // Initialize ImageCapture
                 imageCapture = ImageCapture.Builder()
                     .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                     .setTargetRotation(Surface.ROTATION_0)
@@ -159,7 +161,6 @@ class LivenessSmileCameraManager(
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                     if (isCallbackExecuted && smilingImage != null) return
-                    isCallbackExecuted = true
                     Log.i(TAG, "Image captured: ${photoFile.absolutePath}")
 
                     val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
@@ -171,20 +172,16 @@ class LivenessSmileCameraManager(
                         naturalExpressionImage = correctedBitmap
                     }
 
+                    // Now check if we have both photos
                     if (naturalExpressionImage != null && smilingImage != null) {
-                        OcrSDK.ocrCallback?.success(
-                            OCRSuccessModel(
-                                naturalExpressionImage = naturalExpressionImage,
-                                livenessSmileExpressionImage = smilingImage,
-                                ocrMessage = context.getString(R.string.captured_successfully),
-                            )
-                        )
-
-                        (context as LivenessSmileDetectionActivity).run {
-                            ContextCompat.getMainExecutor(this).execute {
-                                cameraStop()
-                                finish()
-                            }
+                        // If the video URI is already ready, send immediately
+                        if (lastSavedVideoUri != null) {
+                            sendSuccessAndFinish()
+                        } else {
+                            // otherwise, tell the recorder: “when you finalize, send success”
+                            pendingSuccessUntilVideo = true
+                            // stop recording to trigger Finalize
+                            stopRecording()
                         }
                     }
                 }
@@ -232,14 +229,14 @@ class LivenessSmileCameraManager(
         }
 
         if (isFrontCamera) {
-            matrix.postScale(-1f, 1f) // Mirror horizontally for front camera
+            matrix.postScale(-1f, 1f)
         }
 
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 
     fun cameraStop() {
-        currentRecording?.stop() // Ensure recording stops on camera stop
+        currentRecording?.stop()
         currentRecording = null
         cameraProvider.unbindAll()
     }
@@ -277,6 +274,15 @@ class LivenessSmileCameraManager(
                     } else {
                         lastSavedVideoUri = event.outputResults.outputUri
                         Log.i(TAG, "Video saved: $lastSavedVideoUri")
+
+                        // if we were waiting for the video to send success, do it now
+                        if (pendingSuccessUntilVideo &&
+                            naturalExpressionImage != null &&
+                            smilingImage != null &&
+                            !isCallbackExecuted
+                        ) {
+                            sendSuccessAndFinish()
+                        }
                     }
                 }
             }
@@ -286,6 +292,28 @@ class LivenessSmileCameraManager(
     private fun stopRecording() {
         currentRecording?.stop()
         currentRecording = null
+    }
+
+    // NEW: single place to build the model & finish the activity
+    private fun sendSuccessAndFinish() {
+        if (isCallbackExecuted) return
+        isCallbackExecuted = true
+
+        OcrSDK.ocrCallback?.success(
+            OCRSuccessModel(
+                naturalExpressionImage = naturalExpressionImage,
+                livenessSmileExpressionImage = smilingImage,
+                livenessVideoUri = lastSavedVideoUri,
+                ocrMessage = context.getString(R.string.captured_successfully),
+            )
+        )
+
+        (context as LivenessSmileDetectionActivity).run {
+            ContextCompat.getMainExecutor(this).execute {
+                cameraStop()
+                finish()
+            }
+        }
     }
 
     companion object {

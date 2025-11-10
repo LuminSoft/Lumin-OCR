@@ -168,9 +168,15 @@ class MainActivity : ComponentActivity() {
                 ocrCallback = object :
                     OCRCallback {
                     override fun success(ocrSuccessModel: OCRSuccessModel) {
-                        Log.d("OCRCallback", "Nature image :${ocrSuccessModel.naturalExpressionImage}")
-                        Log.d("OCRCallback", "Smile image :${ocrSuccessModel.livenessSmileExpressionImage}")
-                        val d = Log.d(
+                        Log.d(
+                            "OCRCallback",
+                            "Nature image :${ocrSuccessModel.naturalExpressionImage}"
+                        )
+                        Log.d(
+                            "OCRCallback",
+                            "Smile image :${ocrSuccessModel.livenessSmileExpressionImage}"
+                        )
+                        Log.d(
                             "OCRCallback",
                             "National Id image :${ocrSuccessModel.nationalIdImage}"
                         )
@@ -180,8 +186,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     override fun error(ocrFailedModel: OCRFailedModel) {
-                        text.value =  "OCR Error: ${ocrFailedModel.failureMessage}"
-
+                        text.value = "OCR Error: ${ocrFailedModel.failureMessage}"
                     }
                 },
             )

@@ -88,7 +88,7 @@ publishing {
         create<MavenPublication>("release") {
             groupId = "com.luminsoft"
             artifactId = "ocr"
-            version = "1.0.0"
+            version = "1.0.1"
             artifact("$buildDir/outputs/aar/ocr-release.aar")
 
             /*       androidComponents {
