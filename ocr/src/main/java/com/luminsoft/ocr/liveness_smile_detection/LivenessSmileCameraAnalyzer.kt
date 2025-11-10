@@ -79,11 +79,13 @@ class LivenessSmileCameraAnalyzer(
                 circularOverlayView.updateCircleColor(0xFFFFFFFF.toInt())
                 resetNaturalExpressionState()
             }
+
             results.size > 1 -> {
                 updateInstructionsCallback(context.getString(R.string.instruction_one_face))
                 circularOverlayView.updateCircleColor(0xFFFFFFFF.toInt())
                 resetNaturalExpressionState()
             }
+
             results.size == 1 -> {
                 val face = results[0]
                 if (isFaceWithinCircle(face.boundingBox)) {
@@ -121,12 +123,14 @@ class LivenessSmileCameraAnalyzer(
                 resetNaturalExpressionState()
                 false
             }
+
             faceWidth > MAX_FACE_SIZE_THRESHOLD -> {
                 updateInstructionsCallback(context.getString(R.string.instruction_move_back))
                 circularOverlayView.updateCircleColor(0xFFFFFFFF.toInt())
                 resetNaturalExpressionState()
                 false
             }
+
             else -> true
         }
     }
@@ -140,23 +144,28 @@ class LivenessSmileCameraAnalyzer(
             capturingNaturalExpression && smileProb != null && smileProb < NATURAL_THRESHOLD -> {
                 handleNaturalExpression()
             }
+
             awaitingWink && leftOpen != null && rightOpen != null &&
                     (leftOpen < WINK_THRESHOLD || rightOpen < WINK_THRESHOLD) -> {
                 handleWinkExpression()
             }
+
             awaitingSmile && smileProb != null && smileProb > SMILE_THRESHOLD -> {
                 handleSmilingExpression()
             }
+
             else -> {
                 when {
                     capturingNaturalExpression -> {
                         updateInstructionsCallback(context.getString(R.string.instruction_please_keep_natural_expression))
                         circularOverlayView.updateCircleColor(0xFFFFFFFF.toInt())
                     }
+
                     awaitingWink -> {
                         updateInstructionsCallback(context.getString(R.string.instruction_wink_now))
                         circularOverlayView.updateCircleColor(0xFFFFD600.toInt())
                     }
+
                     awaitingSmile -> {
                         updateInstructionsCallback(context.getString(R.string.instruction_smile_now))
                         circularOverlayView.updateCircleColor(0xFF00FF00.toInt())
@@ -170,9 +179,9 @@ class LivenessSmileCameraAnalyzer(
         if (!isNaturalExpressionDetected) {
             isNaturalExpressionDetected = true
             naturalExpressionStartTime = System.currentTimeMillis()
+            onSessionVideoStart()
             updateInstructionsCallback(context.getString(R.string.instruction_keep_natural))
             circularOverlayView.updateCircleColor(0xFFFFFFFF.toInt())
-//            onSessionVideoStart() // Start recording only once
         } else {
             val currentTime = System.currentTimeMillis()
             if (currentTime - naturalExpressionStartTime > 1000) {

@@ -107,11 +107,9 @@ class LivenessSmileCameraManager(
                     .build()
 
                 setCameraConfig(cameraProvider, cameraSelector)
-                startRecording()
             },
             ContextCompat.getMainExecutor(context)
         )
-        startRecording()
     }
 
     private fun setCameraConfig(
