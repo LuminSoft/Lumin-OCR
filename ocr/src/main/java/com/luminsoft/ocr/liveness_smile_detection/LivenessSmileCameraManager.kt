@@ -65,6 +65,8 @@ class LivenessSmileCameraManager(
     private var currentRecording: Recording? = null
     private var lastSavedVideoUri: Uri? = null
 
+    private var discardNextFinalize = false
+
     // NEW: flag to say “I have the photos, wait for video then send success”
     private var pendingSuccessUntilVideo = false
 
@@ -245,6 +247,7 @@ class LivenessSmileCameraManager(
 
         if (currentRecording != null) {
             Log.w(TAG, "Recording already in progress, stopping previous recording")
+            discardNextFinalize = true
             currentRecording?.stop()
             currentRecording = null
         }
@@ -270,7 +273,22 @@ class LivenessSmileCameraManager(
                     if (event.hasError()) {
                         Log.e(TAG, "Video finalize error: ${event.error}")
                     } else {
-                        lastSavedVideoUri = event.outputResults.outputUri
+                        val uri = event.outputResults.outputUri
+
+                        if (discardNextFinalize) {
+                            discardNextFinalize = false
+                            if (uri != Uri.EMPTY) {
+                                try {
+                                    context.contentResolver.delete(uri, null, null)
+                                    Log.i(TAG, "Discarded old recording: $uri")
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Failed to delete discarded recording: $uri", e)
+                                }
+                            }
+                            return@start   // don't touch lastSavedVideoUri
+                        }
+
+                        lastSavedVideoUri = uri
                         Log.i(TAG, "Video saved: $lastSavedVideoUri")
 
                         // if we were waiting for the video to send success, do it now
