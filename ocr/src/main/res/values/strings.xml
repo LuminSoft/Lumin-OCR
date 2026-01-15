@@ -19,4 +19,14 @@
     <string name="instruction_look_straight">Look straight</string>
     <string name="instruction_move_closer">Move Closer</string>
     <string name="instruction_move_back">Move Back</string>
+
+    <!-- Head Rotation Liveness -->
+    <string name="instruction_turn_head_left">Turn your head to the left</string>
+    <string name="instruction_turn_head_right">Turn your head to the right</string>
+    <string name="instruction_look_up">Look up</string>
+    <string name="instruction_look_down">Look down</string>
+    <string name="instruction_hold_position">Hold this position</string>
+    <string name="head_rotation_success">Head rotation verification successful</string>
+    <string name="instruction_liveness_failed">Liveness verification failed. Please try again.</string>
+    <string name="instruction_wrong_movement">Wrong movement! Please try again.</string>
 </resources>

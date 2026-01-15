@@ -12,6 +12,7 @@ import com.luminsoft.ocr.core.sdk.OcrSDK
 import com.luminsoft.ocr.license.LicenseVerifier.isDocumentEnabled
 import com.luminsoft.ocr.license.LicenseVerifier.isFaceEnabled
 import com.luminsoft.ocr.license.LicenseVerifier.readRawFile
+import com.luminsoft.ocr.head_rotation_liveness.HeadRotationLivenessActivity
 import com.luminsoft.ocr.liveness_smile_detection.LivenessSmileDetectionActivity
 import com.luminsoft.ocr.national_id_detection.NationalIdDetection
 import com.luminsoft.ocr.natural_expression_detection.NaturalExpressionDetectionActivity
@@ -58,7 +59,7 @@ object OCR {
                 }
             }
 
-            OCRMode.SMILE_LIVENESS, OCRMode.NaturalExpressionDetection -> {
+            OCRMode.SMILE_LIVENESS, OCRMode.NaturalExpressionDetection, OCRMode.HEAD_ROTATION_LIVENESS -> {
                 launch = isFaceEnabled(context = activity, rawResourceId = OcrSDK.licenseResource)
                 if (!launch) {
                     throw Exception( "Face detection is not enabled in the license.")
@@ -85,6 +86,7 @@ object OCR {
     private fun getModeActivity(ocrMode: OCRMode): Class<out Activity> {
         return when (ocrMode) {
             OCRMode.SMILE_LIVENESS -> LivenessSmileDetectionActivity::class.java
+            OCRMode.HEAD_ROTATION_LIVENESS -> HeadRotationLivenessActivity::class.java
             OCRMode.NaturalExpressionDetection -> NaturalExpressionDetectionActivity::class.java
             OCRMode.PASSPORT_DETECTION -> PassportDetectionActivity::class.java
             OCRMode.NATIONAL_ID_DETECTION -> NationalIdDetection::class.java

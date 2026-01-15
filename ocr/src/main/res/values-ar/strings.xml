@@ -18,6 +18,16 @@
     <string name="instruction_look_straight">انظر للأمام</string>
     <string name="instruction_move_closer">اقترب أكثر</string>
     <string name="instruction_move_back">تراجع للخلف</string>
+
+    <!-- Head Rotation Liveness -->
+    <string name="instruction_turn_head_left">أدر رأسك إلى اليسار</string>
+    <string name="instruction_turn_head_right">أدر رأسك إلى اليمين</string>
+    <string name="instruction_look_up">انظر للأعلى</string>
+    <string name="instruction_look_down">انظر للأسفل</string>
+    <string name="instruction_hold_position">ابق في هذا الوضع</string>
+    <string name="head_rotation_success">تم التحقق من حركة الرأس بنجاح</string>
+    <string name="instruction_liveness_failed">فشل التحقق من الحيوية. يرجى المحاولة مرة أخرى.</string>
+    <string name="instruction_wrong_movement">حركة خاطئة! يرجى المحاولة مرة أخرى.</string>
 </resources>
 
 

@@ -1,10 +1,11 @@
-package com.luminsoft.ocr.liveness_smile_detection
+package com.luminsoft.ocr.head_rotation_liveness
 
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import androidx.exifinterface.media.ExifInterface
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -27,7 +28,6 @@ import androidx.camera.video.VideoCapture
 import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.LifecycleOwner
 import com.luminsoft.ocr.R
 import com.luminsoft.ocr.core.graphic.CircularOverlayView
@@ -39,7 +39,7 @@ import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-class LivenessSmileCameraManager(
+class HeadRotationCameraManager(
     private val context: Context,
     private val previewView: PreviewView,
     private val graphicOverlay: GraphicOverlay<*>,
@@ -57,8 +57,8 @@ class LivenessSmileCameraManager(
     private var isCallbackExecuted = false
 
     // images
-    private var naturalExpressionImage: Bitmap? = null
-    private var smilingImage: Bitmap? = null
+    private var neutralExpressionImage: Bitmap? = null
+    private var finalRotationImage: Bitmap? = null
 
     // video
     private var videoCapture: VideoCapture<Recorder>? = null
@@ -67,7 +67,7 @@ class LivenessSmileCameraManager(
 
     private var discardNextFinalize = false
 
-    // NEW: flag to say "I have the photos, wait for video then send success"
+    // flag to wait for video before sending success
     private var pendingSuccessUntilVideo = false
 
     fun cameraStart() {
@@ -92,12 +92,12 @@ class LivenessSmileCameraManager(
                     .also {
                         it.setAnalyzer(
                             cameraExecutor,
-                            LivenessSmileCameraAnalyzer(
+                            HeadRotationCameraAnalyzer(
                                 context,
                                 graphicOverlay,
                                 circularOverlayView,
                                 ::captureImage,
-                                (context as LivenessSmileDetectionActivity)::updateInstructions,
+                                (context as HeadRotationLivenessActivity)::updateInstructions,
                                 { startRecording() },
                                 { stopRecording() }
                             )
@@ -124,8 +124,8 @@ class LivenessSmileCameraManager(
             val recorder = Recorder.Builder()
                 .setQualitySelector(
                     QualitySelector.from(
-                        Quality.LOWEST,
-                        FallbackStrategy.lowerQualityOrHigherThan(Quality.LOWEST)
+                        Quality.SD,
+                        FallbackStrategy.higherQualityOrLowerThan(Quality.LOWEST)
                     )
                 )
                 .build()
@@ -146,12 +146,12 @@ class LivenessSmileCameraManager(
         }
     }
 
-    private fun captureImage(isSmiling: Boolean) {
-        if (!this::imageCapture.isInitialized || isCallbackExecuted && smilingImage != null) return
+    private fun captureImage(isFinalCapture: Boolean) {
+        if (!this::imageCapture.isInitialized || isCallbackExecuted && finalRotationImage != null) return
 
         val photoFile = File(
             context.filesDir,
-            "${if (isSmiling) "smiling" else "natural"}_face_${System.currentTimeMillis()}.jpg"
+            "${if (isFinalCapture) "rotation_final" else "rotation_neutral"}_face_${System.currentTimeMillis()}.jpg"
         )
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
@@ -160,27 +160,26 @@ class LivenessSmileCameraManager(
             ContextCompat.getMainExecutor(context),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    if (isCallbackExecuted && smilingImage != null) return
+                    if (isCallbackExecuted && finalRotationImage != null) return
                     Log.i(TAG, "Image captured: ${photoFile.absolutePath}")
 
                     val bitmap = BitmapFactory.decodeFile(photoFile.absolutePath)
                     val correctedBitmap = adjustBitmapIfNeeded(photoFile.absolutePath, bitmap)
 
-                    if (isSmiling) {
-                        smilingImage = correctedBitmap
+                    if (isFinalCapture) {
+                        finalRotationImage = correctedBitmap
                     } else {
-                        naturalExpressionImage = correctedBitmap
+                        neutralExpressionImage = correctedBitmap
                     }
 
-                    // Now check if we have both photos
-                    if (naturalExpressionImage != null && smilingImage != null) {
+                    // Check if we have both photos for final success
+                    if (neutralExpressionImage != null && finalRotationImage != null) {
                         // If the video URI is already ready, send immediately
                         if (lastSavedVideoUri != null) {
                             sendSuccessAndFinish()
                         } else {
-                            // otherwise, tell the recorder: “when you finalize, send success”
+                            // otherwise, wait for video to finalize
                             pendingSuccessUntilVideo = true
-                            // stop recording to trigger Finalize
                             stopRecording()
                         }
                     }
@@ -197,7 +196,7 @@ class LivenessSmileCameraManager(
                         )
                     )
 
-                    (context as LivenessSmileDetectionActivity).run {
+                    (context as HeadRotationLivenessActivity).run {
                         ContextCompat.getMainExecutor(this).execute {
                             cameraStop()
                             finish()
@@ -242,7 +241,7 @@ class LivenessSmileCameraManager(
     }
 
     private fun startRecording() {
-        Log.d("startRecording", "startRecording")
+        Log.d("startRecording", "startRecording - HeadRotation")
         val vc = videoCapture ?: return
 
         if (currentRecording != null) {
@@ -252,7 +251,7 @@ class LivenessSmileCameraManager(
             currentRecording = null
         }
 
-        val name = "liveness_${System.currentTimeMillis()}.mp4"
+        val name = "head_rotation_liveness_${System.currentTimeMillis()}.mp4"
         val contentValues = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
@@ -285,16 +284,16 @@ class LivenessSmileCameraManager(
                                     Log.e(TAG, "Failed to delete discarded recording: $uri", e)
                                 }
                             }
-                            return@start   // don't touch lastSavedVideoUri
+                            return@start
                         }
 
                         lastSavedVideoUri = uri
-                        Log.i(TAG, "✅ Video saved: $uri")
+                        Log.i(TAG, "Video saved: $lastSavedVideoUri")
 
                         // if we were waiting for the video to send success, do it now
                         if (pendingSuccessUntilVideo &&
-                            naturalExpressionImage != null &&
-                            smilingImage != null &&
+                            neutralExpressionImage != null &&
+                            finalRotationImage != null &&
                             !isCallbackExecuted
                         ) {
                             sendSuccessAndFinish()
@@ -310,35 +309,20 @@ class LivenessSmileCameraManager(
         currentRecording = null
     }
 
-    // NEW: single place to build the model & finish the activity
     private fun sendSuccessAndFinish() {
         if (isCallbackExecuted) return
-        
-        // Safety check: ensure both images are captured before finishing
-        if (naturalExpressionImage == null || smilingImage == null) {
-            Log.w(TAG, "⚠️ Cannot finish - missing images. Natural: ${naturalExpressionImage != null}, Smiling: ${smilingImage != null}")
-            return
-        }
-        
-        if (lastSavedVideoUri == null) {
-            Log.w(TAG, "⚠️ Cannot finish - missing video URI")
-            return
-        }
-        
         isCallbackExecuted = true
-        
-        Log.i(TAG, "✅ All captures complete - sending success")
 
         OcrSDK.ocrCallback?.success(
             OCRSuccessModel(
-                naturalExpressionImage = naturalExpressionImage,
-                livenessSmileExpressionImage = smilingImage,
+                naturalExpressionImage = neutralExpressionImage,
+                livenessSmileExpressionImage = finalRotationImage,
                 livenessVideoUri = lastSavedVideoUri,
-                ocrMessage = context.getString(R.string.captured_successfully),
+                ocrMessage = context.getString(R.string.head_rotation_success),
             )
         )
 
-        (context as LivenessSmileDetectionActivity).run {
+        (context as HeadRotationLivenessActivity).run {
             ContextCompat.getMainExecutor(this).execute {
                 cameraStop()
                 finish()
@@ -347,7 +331,7 @@ class LivenessSmileCameraManager(
     }
 
     companion object {
-        private const val TAG: String = "CameraManager"
+        private const val TAG: String = "HeadRotationCameraManager"
         var cameraOption: Int = CameraSelector.LENS_FACING_FRONT
     }
 }
