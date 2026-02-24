@@ -59,6 +59,11 @@ class LivenessSmileCameraAnalyzer(
     private var completedMovements = 0
     private var livenessCompleted = false
     
+    private var movement1Score: Double = 0.0
+    private var movement2Score: Double = 0.0
+    private var movement3Score: Double = 0.0
+    private var currentMovementScore: Double = 0.0
+    
     init {
         selectRandomMovements()
     }
@@ -304,6 +309,10 @@ class LivenessSmileCameraAnalyzer(
             LivenessMovement.SMILE -> smileProb != null && smileProb > SMILE_THRESHOLD
         }
         
+        if (isCorrectMovement) {
+            currentMovementScore = calculateMovementScore(movement, smileProb, leftOpen, rightOpen, yaw, pitch)
+        }
+        
         // Detect wrong movement for head rotations only
         if (movement in listOf(LivenessMovement.HEAD_LEFT, LivenessMovement.HEAD_RIGHT, 
                                LivenessMovement.HEAD_UP, LivenessMovement.HEAD_DOWN)) {
@@ -366,29 +375,78 @@ class LivenessSmileCameraAnalyzer(
         
         when (movementNumber) {
             1 -> {
-                Log.d(TAG, "Movement 1 complete! Moving to movement 2: $movement2")
+                movement1Score = currentMovementScore
+                Log.d(TAG, "Movement 1 complete! Score: $movement1Score Moving to movement 2: $movement2")
                 awaitingMovement1 = false
                 awaitingMovement2 = true
                 movementStartTime = System.currentTimeMillis()
                 wrongMovementCount = 0
+                currentMovementScore = 0.0
                 updateInstructionsCallback(getMovementInstruction(movement2))
                 circularOverlayView.updateCircleColor(0xFFFF9800.toInt())
             }
             2 -> {
-                Log.d(TAG, "Movement 2 complete! Moving to movement 3: $movement3")
+                movement2Score = currentMovementScore
+                Log.d(TAG, "Movement 2 complete! Score: $movement2Score Moving to movement 3: $movement3")
                 awaitingMovement2 = false
                 awaitingMovement3 = true
                 movementStartTime = System.currentTimeMillis()
                 wrongMovementCount = 0
+                currentMovementScore = 0.0
                 updateInstructionsCallback(getMovementInstruction(movement3))
                 circularOverlayView.updateCircleColor(0xFF9C27B0.toInt())
             }
             3 -> {
-                Log.d(TAG, "All 3 movements complete! Liveness successful")
+                movement3Score = currentMovementScore
+                Log.d(TAG, "All 3 movements complete! Score: $movement3Score Liveness successful")
+                Log.d(TAG, "Final scores - M1: $movement1Score, M2: $movement2Score, M3: $movement3Score, Avg: ${getAverageScore()}")
                 awaitingMovement3 = false
                 handleLivenessSuccess()
             }
         }
+    }
+    
+    private fun calculateMovementScore(
+        movement: LivenessMovement,
+        smileProb: Float?,
+        leftOpen: Float?,
+        rightOpen: Float?,
+        yaw: Float,
+        pitch: Float
+    ): Double {
+        return when (movement) {
+            LivenessMovement.SMILE -> {
+                ((smileProb ?: 0f) * 100).toDouble().coerceIn(0.0, 100.0)
+            }
+            LivenessMovement.WINK -> {
+                val closedEyeScore = minOf(leftOpen ?: 1f, rightOpen ?: 1f)
+                ((1f - closedEyeScore) * 100).toDouble().coerceIn(0.0, 100.0)
+            }
+            LivenessMovement.HEAD_LEFT -> {
+                (yaw / 45f * 100).toDouble().coerceIn(0.0, 100.0)
+            }
+            LivenessMovement.HEAD_RIGHT -> {
+                (-yaw / 45f * 100).toDouble().coerceIn(0.0, 100.0)
+            }
+            LivenessMovement.HEAD_UP -> {
+                (pitch / 30f * 100).toDouble().coerceIn(0.0, 100.0)
+            }
+            LivenessMovement.HEAD_DOWN -> {
+                (-pitch / 30f * 100).toDouble().coerceIn(0.0, 100.0)
+            }
+        }
+    }
+    
+    fun getMovementScores(): Triple<Double, Double, Double> {
+        return Triple(movement1Score, movement2Score, movement3Score)
+    }
+    
+    fun getMovementTypes(): Triple<String, String, String> {
+        return Triple(movement1.name, movement2.name, movement3.name)
+    }
+    
+    fun getAverageScore(): Double {
+        return (movement1Score + movement2Score + movement3Score) / 3.0
     }
     
     private fun checkWrongMovement(yaw: Float, pitch: Float, movement: LivenessMovement): Boolean {

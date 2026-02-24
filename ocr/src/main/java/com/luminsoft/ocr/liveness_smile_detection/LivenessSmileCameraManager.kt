@@ -32,6 +32,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.luminsoft.ocr.R
 import com.luminsoft.ocr.core.graphic.CircularOverlayView
 import com.luminsoft.ocr.core.graphic.GraphicOverlay
+import com.luminsoft.ocr.core.models.LivenessMovementScores
 import com.luminsoft.ocr.core.models.OCRFailedModel
 import com.luminsoft.ocr.core.models.OCRSuccessModel
 import com.luminsoft.ocr.core.sdk.OcrSDK
@@ -69,6 +70,8 @@ class LivenessSmileCameraManager(
 
     // NEW: flag to say "I have the photos, wait for video then send success"
     private var pendingSuccessUntilVideo = false
+    
+    private var livenessAnalyzer: LivenessSmileCameraAnalyzer? = null
 
     fun cameraStart() {
         val cameraProcessProvider = ProcessCameraProvider.getInstance(context)
@@ -90,18 +93,16 @@ class LivenessSmileCameraManager(
                     .setTargetRotation(Surface.ROTATION_0)
                     .build()
                     .also {
-                        it.setAnalyzer(
-                            cameraExecutor,
-                            LivenessSmileCameraAnalyzer(
-                                context,
-                                graphicOverlay,
-                                circularOverlayView,
-                                ::captureImage,
-                                (context as LivenessSmileDetectionActivity)::updateInstructions,
-                                { startRecording() },
-                                { stopRecording() }
-                            )
+                        livenessAnalyzer = LivenessSmileCameraAnalyzer(
+                            context,
+                            graphicOverlay,
+                            circularOverlayView,
+                            ::captureImage,
+                            (context as LivenessSmileDetectionActivity)::updateInstructions,
+                            { startRecording() },
+                            { stopRecording() }
                         )
+                        it.setAnalyzer(cameraExecutor, livenessAnalyzer!!)
                     }
 
                 val cameraSelector = CameraSelector.Builder()
@@ -327,7 +328,23 @@ class LivenessSmileCameraManager(
         
         isCallbackExecuted = true
         
+        // Get movement scores from analyzer
+        val movementScores = livenessAnalyzer?.let { analyzer ->
+            val scores = analyzer.getMovementScores()
+            val types = analyzer.getMovementTypes()
+            LivenessMovementScores(
+                movement1Score = scores.first,
+                movement2Score = scores.second,
+                movement3Score = scores.third,
+                movement1Type = types.first,
+                movement2Type = types.second,
+                movement3Type = types.third
+            )
+        }
+        
         Log.i(TAG, "✅ All captures complete - sending success")
+        Log.i(TAG, "Movement scores: ${movementScores?.movement1Score}, ${movementScores?.movement2Score}, ${movementScores?.movement3Score}")
+        Log.i(TAG, "Average score: ${movementScores?.getAverageScore()}")
 
         OcrSDK.ocrCallback?.success(
             OCRSuccessModel(
@@ -335,6 +352,7 @@ class LivenessSmileCameraManager(
                 livenessSmileExpressionImage = smilingImage,
                 livenessVideoUri = lastSavedVideoUri,
                 ocrMessage = context.getString(R.string.captured_successfully),
+                livenessMovementScores = movementScores
             )
         )
 
