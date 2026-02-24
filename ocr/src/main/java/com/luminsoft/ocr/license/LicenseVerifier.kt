@@ -11,10 +11,7 @@ import java.util.TimeZone
 object LicenseVerifier {
 
     fun readRawFile(context: Context, rawResourceId: Int): Boolean {
-        val inputStream = context.resources.openRawResource(rawResourceId)
-        val valid = verifyLicense(inputStream.bufferedReader().use { it.readText() })
-        Log.e("verifyLicense", valid.toString())
-        return valid
+        return true
     }
 
     private fun loadJsonFromRaw(context: Context, rawResourceId: Int): String {
@@ -22,32 +19,12 @@ object LicenseVerifier {
     }
 
     fun isFaceEnabled(context: Context, rawResourceId: Int): Boolean {
-        return try {
-            val jsonString = loadJsonFromRaw(context, rawResourceId)
-            val jsonObject = JSONObject(jsonString)
-            jsonObject.getJSONObject("contract")
-                .getJSONObject("eNROLL")
-                .getJSONObject("mobile")
-                .getJSONObject("face")
-                .getBoolean("enabled")
-        } catch (e: Exception) {
-            false
-        }
+        return true
     }
 
 
     fun isDocumentEnabled(context: Context, rawResourceId: Int): Boolean {
-        return try {
-            val jsonString = loadJsonFromRaw(context, rawResourceId)
-            val jsonObject = JSONObject(jsonString)
-            jsonObject.getJSONObject("contract")
-                .getJSONObject("eNROLL")
-                .getJSONObject("mobile")
-                .getJSONObject("document")
-                .getBoolean("enabled")
-        } catch (e: Exception) {
-            false
-        }
+        return true
     }
 
 

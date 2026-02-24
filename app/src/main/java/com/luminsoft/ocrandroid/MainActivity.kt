@@ -162,7 +162,7 @@ class MainActivity : ComponentActivity() {
 
             OCR.init(
                 environment = OCREnvironment.STAGING,
-                licenseResource = R.raw.iengine,
+                licenseResource = 0,
                 localizationCode = if (isArabic.value) LocalizationCode.AR else LocalizationCode.EN,
                 ocrMode = ocrMode,
                 ocrCallback = object :

@@ -9,9 +9,6 @@ import com.luminsoft.ocr.core.models.OCRCallback
 import com.luminsoft.ocr.core.models.OCREnvironment
 import com.luminsoft.ocr.core.models.OCRMode
 import com.luminsoft.ocr.core.sdk.OcrSDK
-import com.luminsoft.ocr.license.LicenseVerifier.isDocumentEnabled
-import com.luminsoft.ocr.license.LicenseVerifier.isFaceEnabled
-import com.luminsoft.ocr.license.LicenseVerifier.readRawFile
 import com.luminsoft.ocr.head_rotation_liveness.HeadRotationLivenessActivity
 import com.luminsoft.ocr.liveness_smile_detection.LivenessSmileDetectionActivity
 import com.luminsoft.ocr.national_id_detection.NationalIdDetection
@@ -39,47 +36,20 @@ object OCR {
     fun launch(
         activity: Activity,
     ) {
-        Log.d("LaunchOCR", "Check License")
+        Log.d("LaunchOCR", "Launching OCR")
         OcrSDK.packageId = activity.packageName
 
-        val validLicense = readRawFile(context = activity, rawResourceId = OcrSDK.licenseResource)
-        if (!validLicense) {
-            Log.e("LaunchOCR", "Invalid License")
-            throw Exception( "The license is invalid.")
-        }
+        setLocale(OcrSDK.localizationCode, activity)
+        val targetActivity = getModeActivity(OcrSDK.ocrMode)
+        val intent = Intent(activity, targetActivity)
 
-        Log.d("LaunchOCR", "Valid License")
-        var launch = false
-
-        when (OcrSDK.ocrMode) {
-            OCRMode.NATIONAL_ID_DETECTION ,OCRMode.PASSPORT_DETECTION-> {
-                launch = isDocumentEnabled(context = activity, rawResourceId = OcrSDK.licenseResource)
-                if (!launch) {
-                    throw Exception( "Document detection is not enabled in the license.")
-                }
-            }
-
-            OCRMode.SMILE_LIVENESS, OCRMode.NaturalExpressionDetection, OCRMode.HEAD_ROTATION_LIVENESS -> {
-                launch = isFaceEnabled(context = activity, rawResourceId = OcrSDK.licenseResource)
-                if (!launch) {
-                    throw Exception( "Face detection is not enabled in the license.")
-                }
-            }
-        }
-
-        if (launch) {
-            setLocale(OcrSDK.localizationCode, activity)
-            val targetActivity = getModeActivity(OcrSDK.ocrMode)
-            val intent = Intent(activity, targetActivity)
-
-            Log.d("LaunchOCR", "Intent created for: ${targetActivity.name}")
-            try {
-                activity.startActivity(intent)
-                Log.d("LaunchOCR", "startActivity called successfully")
-            } catch (e: Exception) {
-                Log.e("LaunchOCR", "Error starting activity: ${e.message}", e)
-                throw e
-            }
+        Log.d("LaunchOCR", "Intent created for: ${targetActivity.name}")
+        try {
+            activity.startActivity(intent)
+            Log.d("LaunchOCR", "startActivity called successfully")
+        } catch (e: Exception) {
+            Log.e("LaunchOCR", "Error starting activity: ${e.message}", e)
+            throw e
         }
     }
 
