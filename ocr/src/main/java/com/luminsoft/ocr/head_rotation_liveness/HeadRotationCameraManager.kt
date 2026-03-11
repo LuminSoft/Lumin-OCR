@@ -1,14 +1,11 @@
 package com.luminsoft.ocr.head_rotation_liveness
 
-import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import androidx.exifinterface.media.ExifInterface
 import android.net.Uri
-import android.os.Build
-import android.provider.MediaStore
 import android.util.Log
 import android.view.Surface
 import androidx.camera.core.Camera
@@ -19,7 +16,7 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.FallbackStrategy
-import androidx.camera.video.MediaStoreOutputOptions
+import androidx.camera.video.FileOutputOptions
 import androidx.camera.video.Quality
 import androidx.camera.video.QualitySelector
 import androidx.camera.video.Recorder
@@ -251,19 +248,8 @@ class HeadRotationCameraManager(
             currentRecording = null
         }
 
-        val name = "head_rotation_liveness_${System.currentTimeMillis()}.mp4"
-        val contentValues = ContentValues().apply {
-            put(MediaStore.MediaColumns.DISPLAY_NAME, name)
-            put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/LuminOCR")
-            }
-        }
-
-        val outputOptions = MediaStoreOutputOptions.Builder(
-            context.contentResolver,
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-        ).setContentValues(contentValues).build()
+        val tempVideoFile = File(context.cacheDir, "head_rotation_liveness_${System.currentTimeMillis()}.mp4")
+        val outputOptions = FileOutputOptions.Builder(tempVideoFile).build()
 
         val recording = vc.output.prepareRecording(context, outputOptions)
         currentRecording = recording.start(ContextCompat.getMainExecutor(context)) { event ->
@@ -276,19 +262,18 @@ class HeadRotationCameraManager(
 
                         if (discardNextFinalize) {
                             discardNextFinalize = false
-                            if (uri != Uri.EMPTY) {
-                                try {
-                                    context.contentResolver.delete(uri, null, null)
-                                    Log.i(TAG, "Discarded old recording: $uri")
-                                } catch (e: Exception) {
-                                    Log.e(TAG, "Failed to delete discarded recording: $uri", e)
-                                }
+                            try {
+                                val discardFile = File(Uri.parse(uri.toString()).path ?: "")
+                                if (discardFile.exists()) discardFile.delete()
+                                Log.i(TAG, "Discarded old recording")
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Failed to delete discarded recording", e)
                             }
                             return@start
                         }
 
-                        lastSavedVideoUri = uri
-                        Log.i(TAG, "Video saved: $lastSavedVideoUri")
+                        lastSavedVideoUri = Uri.fromFile(tempVideoFile)
+                        Log.i(TAG, "Video recorded to cache: ${tempVideoFile.absolutePath}")
 
                         // if we were waiting for the video to send success, do it now
                         if (pendingSuccessUntilVideo &&
