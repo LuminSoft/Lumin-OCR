@@ -33,6 +33,8 @@ import com.luminsoft.ocr.core.models.LivenessMovementScores
 import com.luminsoft.ocr.core.models.OCRFailedModel
 import com.luminsoft.ocr.core.models.OCRSuccessModel
 import com.luminsoft.ocr.core.sdk.OcrSDK
+import android.os.Handler
+import android.os.Looper
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -62,11 +64,24 @@ class LivenessSmileCameraManager(
     private var videoCapture: VideoCapture<Recorder>? = null
     private var currentRecording: Recording? = null
     private var lastSavedVideoUri: Uri? = null
+    private var currentVideoFile: File? = null
 
     private var discardNextFinalize = false
 
-    // NEW: flag to say "I have the photos, wait for video then send success"
+    // flag to say "I have the photos, wait for video then send success"
     private var pendingSuccessUntilVideo = false
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val videoTimeoutRunnable = Runnable {
+        Log.w(TAG, "Video finalize timeout - forcing completion")
+        if (!isCallbackExecuted) {
+            currentVideoFile?.let { file ->
+                if (file.exists() && file.length() > 0) {
+                    lastSavedVideoUri = Uri.fromFile(file)
+                }
+            }
+            sendSuccessAndFinish()
+        }
+    }
     
     private var livenessAnalyzer: LivenessSmileCameraAnalyzer? = null
 
@@ -174,12 +189,14 @@ class LivenessSmileCameraManager(
                     if (naturalExpressionImage != null && smilingImage != null) {
                         // If the video URI is already ready, send immediately
                         if (lastSavedVideoUri != null) {
+                            mainHandler.removeCallbacks(videoTimeoutRunnable)
                             sendSuccessAndFinish()
                         } else {
                             // otherwise, tell the recorder: “when you finalize, send success”
                             pendingSuccessUntilVideo = true
-                            // stop recording to trigger Finalize
                             stopRecording()
+                            // Safety timeout: if video doesn't finalize in 5s, force completion
+                            mainHandler.postDelayed(videoTimeoutRunnable, 5000)
                         }
                     }
                 }
@@ -250,41 +267,48 @@ class LivenessSmileCameraManager(
             currentRecording = null
         }
 
-        val tempVideoFile = File(context.cacheDir, "liveness_${System.currentTimeMillis()}.mp4")
-        val outputOptions = FileOutputOptions.Builder(tempVideoFile).build()
+        currentVideoFile = File(context.cacheDir, "liveness_${System.currentTimeMillis()}.mp4")
+        val outputOptions = FileOutputOptions.Builder(currentVideoFile!!).build()
 
         val recording = vc.output.prepareRecording(context, outputOptions)
         currentRecording = recording.start(ContextCompat.getMainExecutor(context)) { event ->
             when (event) {
                 is VideoRecordEvent.Finalize -> {
+                    if (discardNextFinalize) {
+                        discardNextFinalize = false
+                        try {
+                            val uri = event.outputResults.outputUri
+                            val discardFile = File(Uri.parse(uri.toString()).path ?: "")
+                            if (discardFile.exists()) discardFile.delete()
+                            Log.i(TAG, "Discarded old recording")
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Failed to delete discarded recording", e)
+                        }
+                        return@start
+                    }
+
                     if (event.hasError()) {
                         Log.e(TAG, "Video finalize error: ${event.error}")
-                    } else {
-                        val uri = event.outputResults.outputUri
+                    }
 
-                        if (discardNextFinalize) {
-                            discardNextFinalize = false
-                            try {
-                                val discardFile = File(Uri.parse(uri.toString()).path ?: "")
-                                if (discardFile.exists()) discardFile.delete()
-                                Log.i(TAG, "Discarded old recording")
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Failed to delete discarded recording", e)
-                            }
-                            return@start
+                    // Set video URI regardless of error - file may have usable data
+                    currentVideoFile?.let { file ->
+                        if (file.exists() && file.length() > 0) {
+                            lastSavedVideoUri = Uri.fromFile(file)
+                            Log.i(TAG, "Video recorded to cache: ${file.absolutePath}")
+                        } else {
+                            Log.w(TAG, "Video file missing or empty")
                         }
+                    }
 
-                        lastSavedVideoUri = Uri.fromFile(tempVideoFile)
-                        Log.i(TAG, "Video recorded to cache: ${tempVideoFile.absolutePath}")
-
-                        // if we were waiting for the video to send success, do it now
-                        if (pendingSuccessUntilVideo &&
-                            naturalExpressionImage != null &&
-                            smilingImage != null &&
-                            !isCallbackExecuted
-                        ) {
-                            sendSuccessAndFinish()
-                        }
+                    // if we were waiting for the video to send success, do it now
+                    if (pendingSuccessUntilVideo &&
+                        naturalExpressionImage != null &&
+                        smilingImage != null &&
+                        !isCallbackExecuted
+                    ) {
+                        mainHandler.removeCallbacks(videoTimeoutRunnable)
+                        sendSuccessAndFinish()
                     }
                 }
             }
@@ -307,11 +331,11 @@ class LivenessSmileCameraManager(
         }
         
         if (lastSavedVideoUri == null) {
-            Log.w(TAG, "⚠️ Cannot finish - missing video URI")
-            return
+            Log.w(TAG, "⚠️ Missing video URI - proceeding without video")
         }
         
         isCallbackExecuted = true
+        mainHandler.removeCallbacks(videoTimeoutRunnable)
         
         // Get movement scores from analyzer
         val movementScores = livenessAnalyzer?.let { analyzer ->
