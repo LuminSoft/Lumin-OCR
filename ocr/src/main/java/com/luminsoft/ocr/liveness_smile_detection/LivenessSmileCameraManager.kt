@@ -352,8 +352,9 @@ class LivenessSmileCameraManager(
         }
         
         Log.i(TAG, "✅ All captures complete - sending success")
-        Log.i(TAG, "Movement scores: ${movementScores?.movement1Score}, ${movementScores?.movement2Score}, ${movementScores?.movement3Score}")
-        Log.i(TAG, "Average score: ${movementScores?.getAverageScore()}")
+        Log.i(TAG, "=== SCORE DEBUG OCR === Movement scores: ${movementScores?.movement1Score}, ${movementScores?.movement2Score}, ${movementScores?.movement3Score}")
+        Log.i(TAG, "=== SCORE DEBUG OCR === Average score: ${movementScores?.getAverageScore()}")
+        Log.i(TAG, "=== SCORE DEBUG OCR === movementScores is null: ${movementScores == null}")
 
         OcrSDK.ocrCallback?.success(
             OCRSuccessModel(
