@@ -13,6 +13,7 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.SCANNER
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import com.luminsoft.ocr.R
+import com.luminsoft.ocr.core.models.OCRFailedModel
 import com.luminsoft.ocr.core.models.OCRSuccessModel
 import com.luminsoft.ocr.core.sdk.OcrSDK
 
@@ -77,7 +78,10 @@ class PassportDetectionActivity : AppCompatActivity() {
     }
 
     private fun handleScanFailure() {
-        // Handle the failure (e.g., show a log or error message)
         Log.e("PassportDetection", "Scanning failed or was cancelled.")
+        OcrSDK.ocrCallback?.error(
+            OCRFailedModel("Scanning was cancelled or failed.")
+        )
+        finish()
     }
 }

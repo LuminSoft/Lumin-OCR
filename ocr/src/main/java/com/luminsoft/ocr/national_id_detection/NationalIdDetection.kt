@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.luminsoft.ocr.R
+import com.luminsoft.ocr.core.models.OCRFailedModel
 import com.luminsoft.ocr.core.models.OCRSuccessModel
 import com.luminsoft.ocr.core.sdk.OcrSDK
 
@@ -39,7 +40,9 @@ class NationalIdDetection : ComponentActivity() {
                 )
             } else {
                 // user cancelled or camera failed
-                Toast.makeText(this, "No image captured", Toast.LENGTH_SHORT).show()
+                OcrSDK.ocrCallback?.error(
+                    OCRFailedModel("Scanning was cancelled or failed.")
+                )
             }
             // 4) close screen
             finish()
