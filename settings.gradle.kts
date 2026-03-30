@@ -22,6 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "OCR Android"
 include(":app")
 include(":ocr")
-include(":ocr:enroll_nationalid_detection")
 //include(":opencv")
-
