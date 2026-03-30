@@ -89,7 +89,7 @@ afterEvaluate {
                 from(components["release"])
                 groupId = "com.luminsoft"
                 artifactId = "ocr"
-                version = "0.0.37"
+                version = "0.0.38"
             }
         }
     }
