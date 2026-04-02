@@ -183,7 +183,7 @@ class LivenessSmileCameraAnalyzer(
     private fun checkFaceOrientation(face: Face): Boolean {
         val yaw = face.headEulerAngleY
         val pitch = face.headEulerAngleX
-        return if (yaw < -10 || yaw > 10 || pitch < -15 || pitch > 15) {
+        return if (yaw < -15 || yaw > 15 || pitch < -20 || pitch > 20) {
             updateInstructionsCallback(context.getString(R.string.instruction_look_straight))
             circularOverlayView.updateCircleColor(0xFFFFFFFF.toInt())
             resetNaturalExpressionState()
@@ -565,28 +565,28 @@ class LivenessSmileCameraAnalyzer(
 
     companion object {
         private const val TAG = "CameraAnalyzer"
-        // Face size thresholds - more lenient to allow users at different distances
-        private const val MIN_FACE_SIZE_THRESHOLD = 120          // Was 150 - allows user to be slightly farther
-        private const val MAX_FACE_SIZE_THRESHOLD = 450          // Was 400 - allows user to be slightly closer
-        private const val MIN_FACE_SIZE_THRESHOLD_LENIENT = 80   // Was 100 - very lenient during movements
-        private const val MAX_FACE_SIZE_THRESHOLD_LENIENT = 550  // Was 500 - very lenient during movements
+        // Face size thresholds - very lenient for different distances
+        private const val MIN_FACE_SIZE_THRESHOLD = 100
+        private const val MAX_FACE_SIZE_THRESHOLD = 500
+        private const val MIN_FACE_SIZE_THRESHOLD_LENIENT = 60
+        private const val MAX_FACE_SIZE_THRESHOLD_LENIENT = 600
         
-        // Distance from center thresholds - bigger circle tolerance
-        private const val DistanceThreshold = 100f               // Was 65f - easier to center face
-        private const val DistanceThresholdLenient = 200f        // Was 150f - more room during movements (especially look down)
+        // Distance from center thresholds - generous tolerance
+        private const val DistanceThreshold = 150f
+        private const val DistanceThresholdLenient = 280f
         
-        // Natural expression threshold - more lenient
-        private const val NATURAL_THRESHOLD = 0.35f              // Was 0.1f - allows slight smile/expression
+        // Natural expression threshold - lenient
+        private const val NATURAL_THRESHOLD = 0.4f
         
-        // Movement thresholds
-        private const val WINK_THRESHOLD = 0.15f                 // Was 0.1f - slightly easier wink detection
-        private const val SMILE_THRESHOLD = 0.7f                 // Was 0.8f - slightly easier smile detection
-        private const val HEAD_ROTATION_THRESHOLD_HORIZONTAL = 18f // Was 20f - slightly easier left/right
-        private const val HEAD_ROTATION_THRESHOLD_VERTICAL = 12f   // Was 15f - easier look up
-        private const val HEAD_ROTATION_THRESHOLD_DOWN = 7f        // Was 10f - much easier look down
+        // Movement thresholds - easier for all users
+        private const val WINK_THRESHOLD = 0.2f
+        private const val SMILE_THRESHOLD = 0.6f
+        private const val HEAD_ROTATION_THRESHOLD_HORIZONTAL = 15f
+        private const val HEAD_ROTATION_THRESHOLD_VERTICAL = 10f
+        private const val HEAD_ROTATION_THRESHOLD_DOWN = 5f
         
-        private const val MOVEMENT_HOLD_DURATION_MS = 500L
-        private const val MOVEMENT_TIMEOUT_MS = 10000L
-        private const val MAX_WRONG_MOVEMENTS = 5
+        private const val MOVEMENT_HOLD_DURATION_MS = 300L
+        private const val MOVEMENT_TIMEOUT_MS = 15000L
+        private const val MAX_WRONG_MOVEMENTS = 8
     }
 }

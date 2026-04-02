@@ -143,14 +143,27 @@ class HeadRotationCameraAnalyzer(
 
             results.size == 1 -> {
                 val face = results[0]
-                if (isFaceWithinCircle(face.boundingBox)) {
+                val isInRotationPhase = currentState == HeadRotationState.VALIDATING_ROTATION_1 || 
+                    currentState == HeadRotationState.VALIDATING_ROTATION_2 ||
+                    currentState == HeadRotationState.INSTRUCTION_ROTATION_1 ||
+                    currentState == HeadRotationState.INSTRUCTION_ROTATION_2
+                
+                val facePositionOk = if (isInRotationPhase) {
+                    isFaceWithinCircleLenient(face.boundingBox)
+                } else {
+                    isFaceWithinCircle(face.boundingBox)
+                }
+                
+                if (facePositionOk) {
                     if (checkFaceSize(face)) {
                         handleHeadRotationStateMachine(face)
                     }
                 } else {
                     updateInstructionsCallback(context.getString(R.string.instruction_move_center))
                     circularOverlayView.updateCircleColor(COLOR_WHITE)
-                    resetState()
+                    if (!isInRotationPhase) {
+                        resetState()
+                    }
                 }
             }
         }
@@ -333,31 +346,43 @@ class HeadRotationCameraAnalyzer(
         val distance = sqrt(dx.pow(2.0) + dy.pow(2.0))
         return distance <= DISTANCE_THRESHOLD
     }
+    
+    private fun isFaceWithinCircleLenient(boundingBox: Rect): Boolean {
+        val mappedCenterX = mapX(boundingBox.centerX())
+        val mappedCenterY = mapY(boundingBox.centerY())
+        val overlayCenterX = overlay.width / 2f
+        val overlayCenterY = overlay.height / 2f
+        val dx = (mappedCenterX - overlayCenterX).toDouble()
+        val dy = (mappedCenterY - overlayCenterY).toDouble()
+        val distance = sqrt(dx.pow(2.0) + dy.pow(2.0))
+        return distance <= DISTANCE_THRESHOLD_LENIENT
+    }
 
     private fun mapX(imageX: Int): Float = imageX * overlay.width / imageHeight.toFloat()
     private fun mapY(imageY: Int): Float = imageY * overlay.height / imageWidth.toFloat()
 
     companion object {
         private const val TAG = "HeadRotationAnalyzer"
-        private const val MIN_FACE_SIZE_THRESHOLD = 150
-        private const val MAX_FACE_SIZE_THRESHOLD = 400
-        private const val DISTANCE_THRESHOLD = 65f
+        private const val MIN_FACE_SIZE_THRESHOLD = 100
+        private const val MAX_FACE_SIZE_THRESHOLD = 500
+        private const val DISTANCE_THRESHOLD = 150f
+        private const val DISTANCE_THRESHOLD_LENIENT = 280f
         
-        // Neutral position thresholds
-        private const val NEUTRAL_MIN_YAW = -10f
-        private const val NEUTRAL_MAX_YAW = 10f
-        private const val NEUTRAL_MIN_PITCH = -10f
-        private const val NEUTRAL_MAX_PITCH = 10f
+        // Neutral position thresholds - wider tolerance
+        private const val NEUTRAL_MIN_YAW = -15f
+        private const val NEUTRAL_MAX_YAW = 15f
+        private const val NEUTRAL_MIN_PITCH = -15f
+        private const val NEUTRAL_MAX_PITCH = 15f
         
-        // Rotation detection thresholds (adjusted for front camera mirror)
-        private const val LEFT_ROTATION_THRESHOLD = 20f    // eulerY > 20 means head turned left
-        private const val RIGHT_ROTATION_THRESHOLD = -20f  // eulerY < -20 means head turned right
-        private const val UP_ROTATION_THRESHOLD = -15f     // eulerX < -15 means looking up
-        private const val DOWN_ROTATION_THRESHOLD = 15f    // eulerX > 15 means looking down
+        // Rotation detection thresholds - easier for users
+        private const val LEFT_ROTATION_THRESHOLD = 15f    // eulerY > 15 means head turned left
+        private const val RIGHT_ROTATION_THRESHOLD = -15f  // eulerY < -15 means head turned right
+        private const val UP_ROTATION_THRESHOLD = -10f     // eulerX < -10 means looking up
+        private const val DOWN_ROTATION_THRESHOLD = 10f    // eulerX > 10 means looking down
         
         // Timing
         private const val NEUTRAL_HOLD_DURATION_MS = 1000L
-        private const val ROTATION_HOLD_DURATION_MS = 500L
+        private const val ROTATION_HOLD_DURATION_MS = 300L
         
         // Colors
         private const val COLOR_WHITE = 0xFFFFFFFF.toInt()

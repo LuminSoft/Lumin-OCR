@@ -135,12 +135,12 @@ class NaturalExpressionCameraAnalyzer(
         val yaw = face.headEulerAngleY
         val pitch = face.headEulerAngleX
 
-        return if (yaw < -10 || yaw > 10) {
+        return if (yaw < -15 || yaw > 15) {
             updateInstructionsCallback(context.getString(R.string.instruction_look_straight))
             circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
             resetNaturalExpressionState()
             false
-        } else if (pitch < -15 || pitch > 15) {
+        } else if (pitch < -20 || pitch > 20) {
             updateInstructionsCallback(context.getString(R.string.instruction_look_straight))
             circularOverlayView.updateCircleColor(android.graphics.Color.parseColor("#FFFFFF"))
             resetNaturalExpressionState()
@@ -200,9 +200,9 @@ class NaturalExpressionCameraAnalyzer(
 
     companion object {
         private const val TAG = "CameraAnalyzer"
-        private const val MIN_FACE_SIZE_THRESHOLD = 150
-        private const val MAX_FACE_SIZE_THRESHOLD = 400
-        private const val DistanceThreshold = 65f
+        private const val MIN_FACE_SIZE_THRESHOLD = 100
+        private const val MAX_FACE_SIZE_THRESHOLD = 500
+        private const val DistanceThreshold = 150f
     }
 }
 

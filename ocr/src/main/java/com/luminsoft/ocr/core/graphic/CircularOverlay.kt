@@ -43,7 +43,8 @@ class CircularOverlayView @JvmOverloads constructor(
         // Calculate the center and radius for the circular cutout
         val centerX = width / 2f
         val centerY = height / 2f
-        val radius = 520f // Increased from 450f - bigger circle for easier positioning
+        // Use 45% of the smaller dimension - bigger for easier face positioning
+        val radius = (minOf(width, height) * 0.45f)
 
         // Draw the circular cutout with clear paint
         canvas.drawCircle(centerX, centerY, radius, clearPaint)
