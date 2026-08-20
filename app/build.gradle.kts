@@ -72,5 +72,4 @@ dependencies {
 
     implementation (libs.coil.compose.v230)
     implementation(project(":ocr"))
-    implementation(project(":ocr:enroll_nationalid_detection"))
 }
