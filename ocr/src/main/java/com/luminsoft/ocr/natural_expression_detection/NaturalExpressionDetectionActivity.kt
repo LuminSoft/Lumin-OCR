@@ -1,20 +1,34 @@
 package com.luminsoft.ocr.natural_expression_detection
 
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.os.Bundle
-import android.view.View
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.luminsoft.ocr.core.models.OCRFailedModel
+import com.luminsoft.ocr.core.sdk.OcrSDK
 import com.luminsoft.ocr.databinding.ActivityNaturalExpressionDetectionBinding
-import java.io.File
 
 class NaturalExpressionDetectionActivity : AppCompatActivity() {
 
     private lateinit var cameraManager: NaturalExpressionCameraManager
     private val binding by lazy { ActivityNaturalExpressionDetectionBinding.inflate(layoutInflater) }
+    private val timeoutHandler = Handler(Looper.getMainLooper())
+    private var callbackSent = false
+
+    private val timeoutRunnable = Runnable {
+        if (!callbackSent && !isFinishing) {
+            callbackSent = true
+            cameraManager.cameraStop()
+            OcrSDK.ocrCallback?.error(
+                OCRFailedModel("Session timed out")
+            )
+            finish()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +43,7 @@ class NaturalExpressionDetectionActivity : AppCompatActivity() {
         )
 
         askCameraPermission()
+        timeoutHandler.postDelayed(timeoutRunnable, SESSION_TIMEOUT_MS)
     }
 
     fun updateInstructions(message: String) {
@@ -65,4 +80,24 @@ class NaturalExpressionDetectionActivity : AppCompatActivity() {
         }
     }
 
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        if (!callbackSent) {
+            callbackSent = true
+            cameraManager.cameraStop()
+            OcrSDK.ocrCallback?.error(
+                OCRFailedModel("Capture cancelled")
+            )
+        }
+        super.onBackPressed()
+    }
+
+    override fun onDestroy() {
+        timeoutHandler.removeCallbacks(timeoutRunnable)
+        super.onDestroy()
+    }
+
+    companion object {
+        private const val SESSION_TIMEOUT_MS = 30_000L
+    }
 }
